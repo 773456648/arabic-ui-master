@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HEIBA Connect | منصة الاتصالات الملكية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --gold-primary: #d4af37;
+            --gold-light: #f3e5ab;
+            --bg-dark: #0a0a0c;
+            --surface-dark: rgba(20, 20, 25, 0.8);
+        }
+
+        body { 
+            background-color: var(--bg-dark); 
+            background-image: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.08) 0%, transparent 50%);
+            color: #f0f0f0; 
+            font-family: 'Changa', sans-serif; 
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .gold-text { 
+            background: linear-gradient(to left, var(--gold-light), var(--gold-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-card { 
+            background: var(--surface-dark); 
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.05); 
+            border-radius: 24px; 
+        }
+
+        .call-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 20px;
+            background: #000;
+        }
+
+        .remote-video-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #111;
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
+        .local-video-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            height: 160px;
+            border: 2px solid var(--gold-primary);
+            border-radius: 12px;
+            z-index: 10;
+        }
+
+        /* Message Bubbles */
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 15px; margin-bottom: 8px; font-size: 14px; }
+        .msg-sent { background: var(--gold-primary); color: black; align-self: flex-start; border-bottom-right-radius: 2px; }
+        .msg-received { background: #222; color: white; align-self: flex-end; border-bottom-left-radius: 2px; }
+
+        input { background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px; border-radius: 12px; outline: none; }
+        input:focus { border-color: var(--gold-primary); }
+
+        .active-tab { border-bottom: 3px solid var(--gold-primary); color: var(--gold-primary); }
+    </style>
+</head>
+<body class="flex flex-col">
+
+    <!-- Auth UI -->
+    <div id="auth-ui" class="fixed inset-0 z-[100] bg-[#0a0a0c] flex items-center justify-center p-4">
+        <div class="glass-card w-full max-w-md p-8 space-y-6 text-center">
+            <h1 class="text-6xl font-black gold-text italic">HEIBA</h1>
+            <p class="text-gray-400 text-sm tracking-widest uppercase">Connect & Communicate</p>
+            
+            <div class="space-y-4 pt-4">
+                <input id="u-name" type="text" placeholder="اسم المستخدم" class="w-full">
+                <input id="u-pass" type="password" placeholder="كلمة المرور" class="w-full">
+                <button onclick="doAuth()" class="w-full bg-[#d4af37] text-black font-bold py-4 rounded-xl hover:scale-[1.02] transition">دخول للمنصة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main UI -->
+    <div id="main-ui" class="hidden flex flex-col h-full">
+        <!-- Header -->
+        <header class="p-4 flex justify-between items-center border-b border-white/5">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-[#d4af37] rounded-full flex items-center justify-center text-black font-bold">H</div>
+                <div>
+                    <h2 id="display-name" class="font-bold">جارِ التحميل...</h2>
+                    <span id="status-badge" class="text-[10px] text-green-500">● متصل الآن</span>
+                </div>
+            </div>
+            <button onclick="location.reload()" class="text-red-500 text-sm">تسجيل خروج</button>
+        </header>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Sidebar (Users) -->
+            <div class="w-1/4 border-l border-white/5 flex flex-col bg-black/20">
+                <div class="p-4">
+                    <input id="search-user" oninput="filterUsers()" type="text" placeholder="بحث عن مستخدم..." class="w-full text-xs">
+                </div>
+                <div id="user-list" class="flex-1 overflow-y-auto p-2 space-y-2">
+                    <!-- Users here -->
+                </div>
+            </div>
+
+            <!-- Main Content (Chat/Call) -->
+            <div class="flex-1 flex flex-col relative">
+                
+                <!-- Interaction Tabs -->
+                <div class="flex border-b border-white/5">
+                    <button onclick="switchTab('chat')" id="tab-chat" class="flex-1 py-3 font-bold active-tab">مراسلة</button>
+                    <button onclick="switchTab('call')" id="tab-call" class="flex-1 py-3 font-bold">اتصال فيديو</button>
+                </div>
+
+                <!-- Chat View -->
+                <div id="view-chat" class="flex-1 flex flex-col p-4 overflow-hidden">
+                    <div id="chat-messages" class="flex-1 overflow-y-auto flex flex-col mb-4">
+                        <div class="text-center text-gray-600 my-auto">اختر مستخدماً لبدء المحادثة</div>
+                    </div>
+                    <div class="flex gap-2">
+                        <input id="msg-input" type="text" placeholder="اكتب رسالتك..." class="flex-1">
+                        <button onclick="sendMessage()" class="bg-[#d4af37] text-black px-6 rounded-xl font-bold">إرسال</button>
+                    </div>
+                </div>
+
+                <!-- Call View -->
+                <div id="view-call" class="hidden flex-1 p-6 flex flex-col">
+                    <div class="remote-video-container">
+                        <video id="remoteVideo" autoplay playsinline class="call-video"></video>
+                        <div class="local-video-container">
+                            <video id="localVideo" autoplay playsinline muted class="call-video"></video>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/60" id="call-overlay">
+                            <div class="text-center">
+                                <p class="mb-4 text-lg">جاهز للاتصال بـ <span id="call-target-name" class="gold-text">...</span></p>
+                                <button onclick="startCall()" class="bg-green-600 px-8 py-3 rounded-full font-bold">بدء مكالمة فيديو</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex justify-center gap-4 mt-6">
+                        <button onclick="endCall()" class="bg-red-600 p-4 rounded-full" title="إنهاء المكالمة">📵</button>
+                        <button class="bg-zinc-800 p-4 rounded-full">🎤</button>
+                        <button class="bg-zinc-800 p-4 rounded-full">📷</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Sound -->
+    <audio id="call-sound" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
+
+    <script>
+        let currentUser = null;
+        let selectedUser = null;
+        let peerConnection = null;
+        let localStream = null;
+        let socketInterval = null;
+
+        const config = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+
+        async function doAuth() {
+            const name = document.getElementById('u-name').value;
+            const password = document.getElementById('u-pass').value;
+            if(!name || !password) return alert("أكمل البيانات");
+
+            try {
+                const res = await fetch('/api/auth', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ name, password, action: 'login' })
+                });
+                const data = await res.json();
+                if(res.ok) {
+                    currentUser = data;
+                    document.getElementById('auth-ui').classList.add('hidden');
+                    document.getElementById('main-ui').classList.remove('hidden');
+                    document.getElementById('display-name').innerText = currentUser.name;
+                    initSocket();
+                } else {
+                    alert(data.error);
+                }
+            } catch(e) { alert("خطأ في الاتصال بالسيرفر"); }
+        }
+
+        function initSocket() {
+            // محاكاة Socket.io عبر التكرار (للبساطة في البيئة التجريبية)
+            socketInterval = setInterval(syncData, 2000);
+            syncData();
+        }
+
+        async function syncData() {
+            if(!currentUser) return;
+            try {
+                const res = await fetch(`/api/sync?userId=${currentUser.id}`);
+                const data = await res.json();
+                
+                renderUsers(data.users);
+                if(selectedUser) {
+                    renderMessages(data.messages.filter(m => 
+                        (m.from === currentUser.id && m.to === selectedUser.id) || 
+                        (m.to === currentUser.id && m.from === selectedUser.id)
+                    ));
+                }
+
+                // كشف المكالمات الواردة
+                if(data.incomingCall && !peerConnection) {
+                    handleIncomingCall(data.incomingCall);
+                }
+            } catch(e) {}
+        }
+
+        function renderUsers(users) {
+            const list = document.getElementById('user-list');
+            list.innerHTML = users.filter(u => u.id !== currentUser.id).map(u => `
+                <div onclick="selectUser('${u.id}', '${u.name}')" class="p-3 rounded-xl flex items-center gap-3 cursor-pointer hover:bg-white/5 transition ${selectedUser?.id === u.id ? 'bg-[#d4af37]/10 border border-[#d4af37]/30' : ''}">
+                    <div class="w-10 h-10 rounded-full bg-zinc-800 flex items-center justify-center">${u.verified ? '👑' : '👤'}</div>
+                    <div>
+                        <p class="text-sm font-bold ${u.verified ? 'gold-text' : ''}">${u.name}</p>
+                        <p class="text-[10px] text-gray-500">متصل الآن</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectUser(id, name) {
+            selectedUser = { id, name };
+            document.getElementById('call-target-name').innerText = name;
+            document.getElementById('chat-messages').innerHTML = `<div class="text-center text-xs text-gray-500 my-4">بدء المحادثة مع ${name}</div>`;
+            renderUsers([]); // تحديث الواجهة
+        }
+
+        function switchTab(tab) {
+            document.getElementById('view-chat').classList.toggle('hidden', tab !== 'chat');
+            document.getElementById('view-call').classList.toggle('hidden', tab !== 'call');
+            document.getElementById('tab-chat').classList.toggle('active-tab', tab === 'chat');
+            document.getElementById('tab-call').classList.toggle('active-tab', tab === 'call');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value.trim();
+            if(!text || !selectedUser) return;
+
+            await fetch('/api/messages', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ from: currentUser.id, to: selectedUser.id, text })
+            });
+            input.value = '';
+            syncData();
+        }
+
+        function renderMessages(msgs) {
+            const container = document.getElementById('chat-messages');
+            container.innerHTML = msgs.map(m => `
+                <div class="msg ${m.from === currentUser.id ? 'msg-sent' : 'msg-received'}">
+                    ${m.text}
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- Video Call Logic (Simulation of Signaling) ---
+        async function startCall() {
+            if(!selectedUser) return alert("اختر شخصاً أولاً");
+            document.getElementById('call-overlay').classList.add('hidden');
+            
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = localStream;
+
+            // إرسال طلب اتصال للسيرفر
+            await fetch('/api/call/request', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ from: currentUser.id, to: selectedUser.id, type: 'video' })
+            });
+        }
+
+        function endCall() {
+            if(localStream) localStream.getTracks().forEach(track => track.stop());
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('remoteVideo').srcObject = null;
+            document.getElementById('call-overlay').classList.remove('hidden');
+            peerConnection = null;
+        }
+
+        function handleIncomingCall(call) {
+            if(confirm(`مكالمة واردة من ${call.fromName}.. هل تقبل؟`)) {
+                switchTab('call');
+                startCall(); // في الواقع ستحتاج لتبادل SDP هنا
+            }
+        }
+    </script>
+</body>
+</html>
