@@ -238,7 +238,7 @@
                     document.getElementById('main-ui').classList.remove('hidden');
                     document.getElementById('my-name').innerText = currentUser.name;
                     
-                    // جلب البيانات الأولية
+                    // جلب البيانات الأولية (المستخدمين) من السيرفر فوراً
                     fetchInitialData();
                     // تفعيل السوكيت
                     initializeSocket();
@@ -248,12 +248,19 @@
             } catch(e) { alert("خطأ في الاتصال"); }
         }
 
+        // جلب المستخدمين وتحديث حالتهم (متصل/غير متصل)
         async function fetchInitialData() {
-            const res = await fetch(`/api/sync?userId=${currentUser.id}`);
-            const data = await res.json();
-            usersData = data.users;
-            renderUsers();
-            // يمكننا تخزين الرسائل محلياً هنا
+            try {
+                // طلب قائمة المستخدمين من مسار المزامنة الجديد في السيرفر
+                const res = await fetch(`/api/sync`);
+                const data = await res.json();
+                if (data && data.users) {
+                    usersData = data.users;
+                    renderUsers(); // تحديث القائمة في الواجهة
+                }
+            } catch(e) {
+                console.error("خطأ في جلب المستخدمين:", e);
+            }
         }
 
         // 2. إعداد الاتصال الفوري (Socket.io)
@@ -261,20 +268,16 @@
             socket = io(); // يتصل تلقائياً بنفس السيرفر
 
             socket.on('connect', () => {
+                console.log("تم الاتصال بنجاح بالسوكيت!");
+                // إبلاغ السيرفر بوجودنا فور الاتصال
                 socket.emit('user_connected', currentUser.id);
             });
 
-            // تحديث حالة المستخدمين
+            // استقبال تحديثات حالة المستخدمين فورياً (هنا السر عشان يظهروا لبعض)
             socket.on('update_users_status', (data) => {
-                const userIndex = usersData.findIndex(u => u.id === data.userId);
-                if(userIndex !== -1) {
-                    usersData[userIndex].isOnline = (data.status === 'online');
-                    renderUsers();
-                    if(selectedUser && selectedUser.id === data.userId) {
-                        document.getElementById('chat-user-status').innerText = data.status === 'online' ? 'متصل الآن' : 'غير متصل';
-                        document.getElementById('chat-user-status').className = data.status === 'online' ? 'text-xs text-green-500' : 'text-xs text-gray-500';
-                    }
-                }
+                console.log("تحديث حالة مستخدم:", data);
+                // إعادة جلب القائمة بالكامل وتحديثها عند دخول أو خروج أي شخص
+                fetchInitialData();
             });
 
             // استلام رسالة جديدة
@@ -366,7 +369,7 @@
                 localStream = await navigator.mediaDevices.getUserMedia({ video: type === 'video', audio: true });
                 document.getElementById('localVideo').srcObject = localStream;
                 
-                // هنا يتم إرسال إشارة الرنين للطرف الآخر
+                // إرسال إشارة الاتصال (الرنين) للطرف الآخر
                 socket.emit('call_user', { userToCall: selectedUser.id, from: currentUser.id, name: currentUser.name, signalData: '...' });
             } catch(e) {
                 alert("لم نتمكن من الوصول للكاميرا/المايكروفون");
@@ -382,7 +385,7 @@
             const caller = window.incomingCallData;
             document.getElementById('call-status-text').innerText = "مكالمة جارية...";
             
-            // تهيئة الكاميرا والرد
+            // تهيئة الكاميرا والرد (في الواقع نحتاج لتبادل SDP هنا)
             navigator.mediaDevices.getUserMedia({ video: true, audio: true }).then(stream => {
                 localStream = stream;
                 document.getElementById('localVideo').srcObject = stream;
@@ -401,7 +404,7 @@
             document.getElementById('localVideo').srcObject = null;
             document.getElementById('remoteVideo').srcObject = null;
             document.getElementById('call-screen').classList.add('hidden');
-            // إبلاغ الطرف الآخر بالإنهاء
+            // هنا يجب إبلاغ الطرف الآخر بإنهاء المكالمة
         }
     </script>
 </body>
