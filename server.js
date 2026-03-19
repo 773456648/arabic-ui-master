@@ -1,33 +1,43 @@
 const express = require('express');
-const http = require('http'); // نحتاج http عشان دمج السوكيت
-const { Server } = require('socket.io'); // مكتبة الاتصال الفوري
+const http = require('http');
+const { Server } = require('socket.io');
 const fs = require('fs');
 const axios = require('axios');
 const path = require('path');
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const io = new Server(server, { 
+    cors: { origin: "*" } 
+});
 
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_connect_db.json';
+
+// إعدادات التلجرام الخاصة بك (حافظ عليها سرية)
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
 
-// --- إعدادات الواجهة ---
+// --- إعدادات الواجهة والبيانات ---
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
 
-// --- قاعدة البيانات ---
+// --- إدارة قاعدة البيانات ---
 let db = { users: [], messages: [] };
 if (fs.existsSync(DB_PATH)) {
-    try { db = JSON.parse(fs.readFileSync(DB_PATH)); } 
-    catch (e) { console.error("Error reading DB"); }
+    try { 
+        db = JSON.parse(fs.readFileSync(DB_PATH)); 
+    } catch (e) { 
+        console.error("خطأ في قراءة قاعدة البيانات"); 
+    }
 }
 
 const saveDB = () => {
-    try { fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2)); } 
-    catch (e) { console.error("DB Save Error:", e); }
+    try { 
+        fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2)); 
+    } catch (e) { 
+        console.error("خطأ في حفظ البيانات:", e); 
+    }
 };
 
 // --- إشعارات الإدارة ---
@@ -41,7 +51,7 @@ async function notifyAdmin(msg) {
     } catch (e) {}
 }
 
-// --- نظام تسجيل الدخول (API العادي) ---
+// --- نظام تسجيل الدخول (API) ---
 app.post('/api/auth', (req, res) => {
     const { name, password, action } = req.body;
     let user = db.users.find(u => u.name === name);
@@ -51,67 +61,59 @@ app.post('/api/auth', (req, res) => {
             if (user.password === password) return res.json(user);
             return res.status(403).json({ error: "كلمة المرور خطأ" });
         }
-        // تسجيل جديد
+        // تسجيل مستخدم جديد تلقائياً
         user = { 
             id: 'U' + Math.random().toString(36).substr(2, 9), 
-            name, password, isOnline: false 
+            name, 
+            password, 
+            isOnline: false 
         };
         db.users.push(user);
         saveDB();
-        notifyAdmin(`عضو جديد انضم: ${name}`);
+        notifyAdmin(`عضو جديد انضم للمنصة: ${name}`);
         return res.json(user);
     }
 });
 
 // ==========================================
-// 🚀 نظام الاتصال الفوري (Socket.io) الخرافي
+// 🚀 نظام الاتصال الفوري (Socket.io)
 // ==========================================
 
-// تخزين معرفات الجلسات النشطة لمعرفة من المتصل حالياً
-const activeSockets = new Map(); // userId -> socketId
+const activeSockets = new Map();
 
 io.on('connection', (socket) => {
-    console.log(`⚡ مستخدم متصل جديد: ${socket.id}`);
+    console.log(`⚡ متصل جديد: ${socket.id}`);
 
-    // 1. تسجيل دخول المستخدم في السوكيت (تحديث حالته لـ "متصل")
     socket.on('user_connected', (userId) => {
         activeSockets.set(userId, socket.id);
-        
-        // إبلاغ جميع المستخدمين أن هذا الشخص أصبح متصل
         io.emit('update_users_status', { userId, status: 'online' });
     });
 
-    // 2. إرسال رسالة فورية
     socket.on('send_message', (data) => {
         const { from, to, text } = data;
         const messageObj = { from, to, text, time: new Date() };
         
         db.messages.push(messageObj);
-        if(db.messages.length > 200) db.messages.shift(); // حفظ آخر 200 رسالة
+        if(db.messages.length > 200) db.messages.shift();
         saveDB();
 
-        // إرسال الرسالة للمستلم فوراً إذا كان متصل
         const recipientSocket = activeSockets.get(to);
         if (recipientSocket) {
             io.to(recipientSocket).emit('receive_message', messageObj);
         }
     });
 
-    // 3. نظام المكالمات المتكامل (طلب مكالمة)
     socket.on('call_user', (data) => {
-        const { userToCall, signalData, from, name } = data;
-        const recipientSocket = activeSockets.get(userToCall);
-        
+        const recipientSocket = activeSockets.get(data.userToCall);
         if (recipientSocket) {
-            // يرن عند الطرف الثاني فوراً
-            io.to(recipientSocket).emit('incoming_call', { signal: signalData, from, name });
-        } else {
-            // إذا كان غير متصل، نرد على المتصل بأنه غير متاح
-            socket.emit('call_failed', { reason: 'المستخدم غير متصل حالياً' });
+            io.to(recipientSocket).emit('incoming_call', { 
+                signal: data.signalData, 
+                from: data.from, 
+                name: data.name 
+            });
         }
     });
 
-    // 4. الرد على المكالمة (قبول)
     socket.on('answer_call', (data) => {
         const recipientSocket = activeSockets.get(data.to);
         if(recipientSocket) {
@@ -119,7 +121,6 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 5. رفض المكالمة أو إنهاؤها
     socket.on('reject_call', (data) => {
         const recipientSocket = activeSockets.get(data.to);
         if(recipientSocket) {
@@ -127,9 +128,7 @@ io.on('connection', (socket) => {
         }
     });
 
-    // 6. عند انقطاع الاتصال (خروج المستخدم)
     socket.on('disconnect', () => {
-        // البحث عن المستخدم الذي خرج وتحديث حالته لـ "غير متصل"
         for (let [userId, socketId] of activeSockets.entries()) {
             if (socketId === socket.id) {
                 activeSockets.delete(userId);
@@ -137,14 +136,12 @@ io.on('connection', (socket) => {
                 break;
             }
         }
-        console.log(`❌ مستخدم غادر: ${socket.id}`);
     });
 });
 
-// --- تشغيل السيرفر ---
 server.listen(PORT, () => {
     console.log(`====================================`);
-    console.log(`🚀 HEIBA ROYAL PLATFORM IS LIVE`);
-    console.log(`📡 PORT: ${PORT} | REAL-TIME ENABLED`);
+    console.log(`🚀 HEIBA ROYAL PLATFORM IS LIVE ON PORT ${PORT}`);
     console.log(`====================================`);
 });
+ط
