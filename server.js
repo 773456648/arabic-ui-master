@@ -51,7 +51,21 @@ async function notifyAdmin(msg) {
     } catch (e) {}
 }
 
-// --- نظام تسجيل الدخول (API) ---
+// ==========================================
+// 🔄 نظام مزامنة المستخدمين والرسائل (API)
+// ==========================================
+
+// مسار لجلب المستخدمين وتحديد المتصلين منهم (هذا اللي كان ناقصك!)
+app.get('/api/sync', (req, res) => {
+    // نرسل قائمة المستخدمين ونحدد من منهم متصل حالياً عبر السوكيت
+    const usersWithStatus = db.users.map(u => ({
+        ...u,
+        isOnline: activeSockets.has(u.id)
+    }));
+    res.json({ users: usersWithStatus });
+});
+
+// نظام تسجيل الدخول (API)
 app.post('/api/auth', (req, res) => {
     const { name, password, action } = req.body;
     let user = db.users.find(u => u.name === name);
@@ -84,11 +98,14 @@ const activeSockets = new Map();
 io.on('connection', (socket) => {
     console.log(`⚡ متصل جديد: ${socket.id}`);
 
+    // إبلاغ السيرفر بهوية المستخدم المتصل
     socket.on('user_connected', (userId) => {
         activeSockets.set(userId, socket.id);
+        // تحديث حالة المستخدم في قاعدة البيانات (اختياري، نعتمد على activeSockets حالياً)
         io.emit('update_users_status', { userId, status: 'online' });
     });
 
+    // إرسال رسالة فورية
     socket.on('send_message', (data) => {
         const { from, to, text } = data;
         const messageObj = { from, to, text, time: new Date() };
@@ -97,12 +114,14 @@ io.on('connection', (socket) => {
         if(db.messages.length > 200) db.messages.shift();
         saveDB();
 
+        // إرسال الرسالة للمستلم فوراً إذا كان متصل
         const recipientSocket = activeSockets.get(to);
         if (recipientSocket) {
             io.to(recipientSocket).emit('receive_message', messageObj);
         }
     });
 
+    // نظام المكالمات
     socket.on('call_user', (data) => {
         const recipientSocket = activeSockets.get(data.userToCall);
         if (recipientSocket) {
@@ -128,6 +147,7 @@ io.on('connection', (socket) => {
         }
     });
 
+    // عند انقطاع الاتصال
     socket.on('disconnect', () => {
         for (let [userId, socketId] of activeSockets.entries()) {
             if (socketId === socket.id) {
