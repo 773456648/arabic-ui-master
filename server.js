@@ -14,7 +14,7 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_connect_db.json';
 
-// إعدادات التلجرام الخاصة بك (حافظ عليها سرية)
+// إعدادات التلجرام الخاصة بك
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
 const MY_CHAT_ID = '5042495708';
 
@@ -40,7 +40,7 @@ const saveDB = () => {
     }
 };
 
-// --- إشعارات الإدارة ---
+// --- إشعارات الإدارة عبر تلجرام ---
 async function notifyAdmin(msg) {
     try {
         await axios.post(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -61,7 +61,7 @@ app.post('/api/auth', (req, res) => {
             if (user.password === password) return res.json(user);
             return res.status(403).json({ error: "كلمة المرور خطأ" });
         }
-        // تسجيل مستخدم جديد تلقائياً
+        // تسجيل جديد تلقائي
         user = { 
             id: 'U' + Math.random().toString(36).substr(2, 9), 
             name, 
@@ -144,4 +144,3 @@ server.listen(PORT, () => {
     console.log(`🚀 HEIBA ROYAL PLATFORM IS LIVE ON PORT ${PORT}`);
     console.log(`====================================`);
 });
-ط
