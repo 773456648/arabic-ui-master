@@ -5,101 +5,69 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HEIBA Royal | منصة الاتصالات الملكية</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/socket.io/socket.io.js"></script>
-
     <style>
-        :root {
-            --gold-primary: #d4af37;
-            --gold-hover: #e0bc48;
-            --bg-main: #0a0a0c;
-            --bg-sidebar: #131318;
-            --bg-chat: #0f0f13;
-            --glass-bg: rgba(20, 20, 25, 0.85);
-        }
-        body { background-color: var(--bg-main); color: #f0f0f0; font-family: 'Changa', sans-serif; overflow: hidden; height: 100vh; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
-        ::-webkit-scrollbar-thumb:hover { background: var(--gold-primary); }
-        .gold-text { color: var(--gold-primary); }
-        .auth-container { background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.1) 0%, var(--bg-main) 70%); }
-        .auth-card { background: var(--glass-bg); backdrop-filter: blur(20px); border: 1px solid rgba(212, 175, 55, 0.2); box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .msg-bubble { max-width: 75%; padding: 10px 16px; border-radius: 16px; margin-bottom: 4px; font-size: 15px; position: relative; line-height: 1.5; }
-        .msg-sent { background: var(--gold-primary); color: #000; align-self: flex-start; border-bottom-right-radius: 4px; }
-        .msg-received { background: #23232b; color: #fff; align-self: flex-end; border-bottom-left-radius: 4px; }
-        .msg-time { font-size: 10px; opacity: 0.7; margin-top: 4px; display: block; text-align: left; }
-        .call-overlay { background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(15px); z-index: 50; }
-        .video-container { position: relative; width: 100%; height: 100%; max-height: 70vh; background: #000; border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
+        :root { --gold: #d4af37; --bg: #0a0a0c; }
+        body { background: var(--bg); color: #fff; font-family: 'Changa', sans-serif; overflow: hidden; height: 100vh; }
+        .gold-text { color: var(--gold); }
+        .video-container { position: relative; width: 100%; height: 70vh; background: #000; border-radius: 20px; border: 1px solid var(--gold); overflow: hidden; }
         .remote-video { width: 100%; height: 100%; object-fit: cover; }
-        .local-video { position: absolute; bottom: 20px; right: 20px; width: 120px; height: 160px; object-fit: cover; border-radius: 12px; border: 2px solid var(--gold-primary); background: #222; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-        .user-item.active { background: rgba(212, 175, 55, 0.1); border-right: 3px solid var(--gold-primary); }
+        .local-video { position: absolute; bottom: 20px; right: 20px; width: 120px; height: 160px; border-radius: 12px; border: 2px solid var(--gold); }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <div id="auth-ui" class="auth-container fixed inset-0 z-[100] flex items-center justify-center p-4">
-        <div class="auth-card w-full max-w-md p-10 rounded-3xl text-center">
-            <div class="mb-8">
-                <i class="fa-solid fa-crown text-5xl gold-text mb-4"></i>
-                <h1 class="text-4xl font-black text-white tracking-wider">HEIBA <span class="gold-text">ROYAL</span></h1>
-                <p class="text-gray-400 text-sm mt-2">نظام الاتصالات المشفر</p>
-            </div>
-            <div class="space-y-5">
-                <input id="u-name" type="text" placeholder="اسم المستخدم" class="w-full bg-[#1a1a20] border border-white/10 text-white px-12 py-4 rounded-xl outline-none focus:border-[#d4af37]">
-                <input id="u-pass" type="password" placeholder="كلمة المرور" class="w-full bg-[#1a1a20] border border-white/10 text-white px-12 py-4 rounded-xl outline-none focus:border-[#d4af37]">
-                <button onclick="doAuth()" class="w-full bg-[#d4af37] text-black font-bold py-4 rounded-xl shadow-[0_0_15px_rgba(212,175,55,0.4)]">تسجيل الدخول</button>
-            </div>
+    <div id="auth-ui" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+        <div class="bg-[#131318] w-full max-w-md p-10 rounded-3xl border border-gold/20 text-center">
+            <i class="fa-solid fa-crown text-5xl gold-text mb-4"></i>
+            <h1 class="text-3xl font-black mb-6">HEIBA <span class="gold-text">ROYAL</span></h1>
+            <input id="u-name" type="text" placeholder="اسم المستخدم" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10 focus:border-gold">
+            <input id="u-pass" type="password" placeholder="كلمة المرور" class="w-full bg-white/5 p-4 rounded-xl mb-6 outline-none border border-white/10 focus:border-gold">
+            <button onclick="doAuth()" class="w-full bg-gold text-black font-bold py-4 rounded-xl shadow-lg">تسجيل الدخول</button>
         </div>
     </div>
 
     <div id="main-ui" class="hidden flex h-screen w-full">
-        <div class="w-80 bg-[var(--bg-sidebar)] flex flex-col border-l border-white/5">
-            <div class="p-4 border-b border-white/5 flex items-center justify-between">
-                <h2 id="my-name" class="font-bold text-white">...</h2>
-                <button onclick="location.reload()" class="text-gray-500 hover:text-red-500"><i class="fa-solid fa-right-from-bracket"></i></button>
+        <div class="w-80 bg-[#131318] border-l border-white/5 flex flex-col">
+            <div class="p-4 border-b border-white/5 flex justify-between">
+                <span id="my-name" class="font-bold">...</span>
+                <i class="fa-solid fa-shield-halved gold-text"></i>
             </div>
             <div id="users-list" class="flex-1 overflow-y-auto"></div>
         </div>
 
-        <div class="flex-1 flex flex-col bg-[var(--bg-chat)] relative">
-            <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--bg-chat)]">
-                <i class="fa-solid fa-crown text-6xl text-gray-800 mb-4"></i>
-                <h2 class="text-2xl font-bold text-gray-500">منصة هيبة رويال</h2>
-            </div>
-
-            <div id="chat-header" class="hidden h-16 border-b border-white/5 flex items-center justify-between px-6 bg-[var(--bg-sidebar)]">
-                <h3 id="chat-user-name" class="font-bold text-white">...</h3>
-                <div class="flex gap-4">
-                    <button onclick="initiateCall('voice')" class="text-[#d4af37]"><i class="fa-solid fa-phone"></i></button>
-                    <button onclick="initiateCall('video')" class="text-[#d4af37]"><i class="fa-solid fa-video"></i></button>
+        <div class="flex-1 flex flex-col bg-[#0f0f13]">
+            <div id="chat-header" class="hidden h-16 border-b border-white/5 flex items-center justify-between px-6">
+                <h3 id="chat-user-name" class="font-bold">...</h3>
+                <div class="flex gap-6">
+                    <button onclick="initiateCall('video')" class="gold-text text-xl"><i class="fa-solid fa-video"></i></button>
                 </div>
             </div>
-
-            <div id="chat-messages" class="hidden flex-1 p-6 overflow-y-auto flex flex-col gap-2"></div>
-
-            <div id="chat-input-area" class="hidden p-4 bg-[var(--bg-sidebar)] border-t border-white/5">
-                <div class="flex items-center gap-3 bg-[#1a1a20] p-2 rounded-2xl">
-                    <input id="msg-input" type="text" placeholder="اكتب رسالتك..." class="flex-1 bg-transparent text-white outline-none px-2" onkeypress="if(event.key === 'Enter') sendMessage()">
-                    <button onclick="sendMessage()" class="bg-[#d4af37] text-black p-2 rounded-xl"><i class="fa-solid fa-paper-plane"></i></button>
+            <div id="chat-messages" class="flex-1 p-6 overflow-y-auto flex flex-col gap-3"></div>
+            <div id="chat-input-area" class="hidden p-4 bg-[#131318]">
+                <div class="flex gap-3 bg-white/5 p-2 rounded-2xl">
+                    <input id="msg-input" type="text" class="flex-1 bg-transparent px-2 outline-none" placeholder="اكتب رسالتك...">
+                    <button onclick="sendMessage()" class="bg-gold text-black p-2 rounded-xl px-4"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div id="call-screen" class="hidden call-overlay absolute inset-0 flex flex-col items-center justify-center p-6">
-                <h2 id="call-status-text" class="text-white mb-6">جاري الاتصال بـ <span id="call-target-name" class="gold-text">...</span></h2>
-                <div class="video-container">
-                    <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
-                    <video id="localVideo" autoplay playsinline muted class="local-video"></video>
-                </div>
-                <button onclick="endCall()" class="mt-8 w-16 h-16 rounded-full bg-red-600 text-white"><i class="fa-solid fa-phone-slash"></i></button>
-            </div>
+    <div id="call-screen" class="hidden fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-6">
+        <div class="video-container">
+            <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
+            <video id="localVideo" autoplay playsinline muted class="local-video"></video>
+        </div>
+        <button onclick="location.reload()" class="mt-8 bg-red-600 w-16 h-16 rounded-full"><i class="fa-solid fa-phone-slash text-2xl"></i></button>
+    </div>
 
-            <div id="incoming-call-modal" class="hidden absolute top-10 left-1/2 transform -translate-x-1/2 bg-[#1a1a20] border border-[#d4af37] rounded-2xl p-4 z-[100] flex items-center gap-6">
-                <div class="text-white">مكالمة من: <span id="caller-name">...</span></div>
-                <button onclick="acceptCall()" class="bg-green-600 p-2 rounded-full text-white"><i class="fa-solid fa-phone"></i></button>
-                <button onclick="rejectCall()" class="bg-red-600 p-2 rounded-full text-white"><i class="fa-solid fa-phone-slash"></i></button>
-            </div>
+    <div id="incoming-modal" class="hidden fixed top-5 left-1/2 -translate-x-1/2 bg-[#1a1a20] border border-gold p-5 rounded-2xl z-[300] flex items-center gap-10">
+        <div class="text-white font-bold">اتصال من: <span id="caller-name"></span></div>
+        <div class="flex gap-4">
+            <button onclick="acceptCall()" class="bg-green-600 p-3 rounded-full"><i class="fa-solid fa-phone"></i></button>
+            <button onclick="location.reload()" class="bg-red-600 p-3 rounded-full"><i class="fa-solid fa-phone-slash"></i></button>
         </div>
     </div>
 
@@ -107,7 +75,7 @@
 
     <script>
         let currentUser, selectedUser, socket, localStream, peerConnection;
-        const servers = { iceServers: [{ urls: ['stun:stun1.l.google.com:19302', 'stun:stun2.l.google.com:19302'] }] };
+        let servers = { iceServers: [] };
 
         async function doAuth() {
             const name = document.getElementById('u-name').value;
@@ -119,50 +87,40 @@
                 document.getElementById('auth-ui').classList.add('hidden');
                 document.getElementById('main-ui').classList.remove('hidden');
                 document.getElementById('my-name').innerText = currentUser.name;
-                fetchInitialData(); initializeSocket();
-            } else alert(data.error);
+                fetchSync(); initializeSocket();
+            }
         }
 
-        async function fetchInitialData() {
-            const res = await fetch(`/api/sync`);
+        async function fetchSync() {
+            const res = await fetch('/api/sync');
             const data = await res.json();
-            if (data.users) { usersData = data.users; renderUsers(); }
+            if (data.iceServers) servers.iceServers = data.iceServers;
+            renderUsers(data.users);
         }
 
         function initializeSocket() {
             socket = io();
-            socket.on('connect', () => socket.emit('user_connected', currentUser.id));
-            socket.on('update_users_status', fetchInitialData);
-            socket.on('receive_message', (msg) => { if(selectedUser?.id === msg.from || selectedUser?.id === msg.to) appendMessage(msg); });
-            
+            socket.emit('user_connected', currentUser.id);
+            socket.on('update_users_status', fetchSync);
+            socket.on('receive_message', appendMessage);
             socket.on('incoming_call', (data) => {
-                window.incomingCallData = data;
+                window.callData = data;
                 document.getElementById('caller-name').innerText = data.name;
-                document.getElementById('incoming-call-modal').classList.remove('hidden');
+                document.getElementById('incoming-modal').classList.remove('hidden');
                 document.getElementById('ringtone').play();
             });
-
             socket.on('call_accepted', async (signal) => { await peerConnection.setRemoteDescription(new RTCSessionDescription(signal)); });
-            
-            // استقبال مسارات العبور الإجبارية عبر السيرفر (لسحق جدران الحماية)
-            socket.on('ice_candidate', async (data) => {
-                if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-            });
+            socket.on('ice_candidate', async (data) => { if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); });
         }
 
         async function initiateCall(type) {
             document.getElementById('call-screen').classList.remove('hidden');
-            document.getElementById('call-target-name').innerText = selectedUser.name;
             peerConnection = new RTCPeerConnection(servers);
-            localStream = await navigator.mediaDevices.getUserMedia({ video: type === 'video', audio: true });
+            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             document.getElementById('localVideo').srcObject = localStream;
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.onicecandidate = (e) => {
-                if (e.candidate) socket.emit('ice_candidate', { to: selectedUser.id, candidate: e.candidate, from: currentUser.id });
-            };
-            peerConnection.ontrack = (e) => document.getElementById('remoteVideo').srcObject = e.streams[0];
-
+            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+            peerConnection.onicecandidate = e => e.candidate && socket.emit('ice_candidate', { to: selectedUser.id, candidate: e.candidate, from: currentUser.id });
+            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
             socket.emit('call_user', { userToCall: selectedUser.id, from: currentUser.id, name: currentUser.name, signalData: offer });
@@ -170,49 +128,40 @@
 
         async function acceptCall() {
             document.getElementById('ringtone').pause();
-            document.getElementById('incoming-call-modal').classList.add('hidden');
+            document.getElementById('incoming-modal').classList.add('hidden');
             document.getElementById('call-screen').classList.remove('hidden');
-            const data = window.incomingCallData;
             peerConnection = new RTCPeerConnection(servers);
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             document.getElementById('localVideo').srcObject = localStream;
-            localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
-
-            peerConnection.onicecandidate = (e) => {
-                if (e.candidate) socket.emit('ice_candidate', { to: data.from, candidate: e.candidate, from: currentUser.id });
-            };
-            peerConnection.ontrack = (e) => document.getElementById('remoteVideo').srcObject = e.streams[0];
-
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.signalData));
+            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
+            peerConnection.onicecandidate = e => e.candidate && socket.emit('ice_candidate', { to: window.callData.from, candidate: e.candidate, from: currentUser.id });
+            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
+            await peerConnection.setRemoteDescription(new RTCSessionDescription(window.callData.signalData));
             const answer = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answer);
-            socket.emit('answer_call', { to: data.from, signal: answer });
+            socket.emit('answer_call', { to: window.callData.from, signal: answer });
         }
 
-        function endCall() { location.reload(); }
-
-        function renderUsers() {
+        function renderUsers(users) {
             const list = document.getElementById('users-list');
-            list.innerHTML = usersData.filter(u => u.id !== currentUser.id).map(u => `
-                <div onclick="openChat('${u.id}', '${u.name}', ${u.isOnline})" class="p-4 flex items-center gap-3 cursor-pointer hover:bg-white/5 ${selectedUser?.id === u.id ? 'active' : ''}">
-                    <div class="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">${u.name[0]}</div>
-                    <div><div class="text-sm font-bold">${u.name}</div><div class="text-xs ${u.isOnline ? 'text-green-500' : 'text-gray-500'}">${u.isOnline ? 'متصل' : 'غير متصل'}</div></div>
+            list.innerHTML = users.filter(u => u.id !== currentUser.id).map(u => `
+                <div onclick="openChat('${u.id}', '${u.name}')" class="p-4 border-b border-white/5 cursor-pointer hover:bg-white/5">
+                    <div class="font-bold">${u.name}</div>
+                    <div class="text-xs ${u.isOnline ? 'text-green-500' : 'text-gray-500'}">${u.isOnline ? 'متصل الآن' : 'غير متصل'}</div>
                 </div>
             `).join('');
         }
 
-        function openChat(id, name, isOnline) {
+        function openChat(id, name) {
             selectedUser = { id, name };
-            document.getElementById('welcome-screen').classList.add('hidden');
-            ['chat-header', 'chat-messages', 'chat-input-area'].forEach(id => document.getElementById(id).classList.remove('hidden'));
+            document.getElementById('chat-header').classList.remove('hidden');
+            document.getElementById('chat-input-area').classList.remove('hidden');
             document.getElementById('chat-user-name').innerText = name;
-            renderUsers();
         }
 
         function sendMessage() {
             const input = document.getElementById('msg-input');
-            if(!input.value.trim()) return;
-            const msg = { from: currentUser.id, to: selectedUser.id, text: input.value, time: new Date() };
+            const msg = { from: currentUser.id, to: selectedUser.id, text: input.value };
             socket.emit('send_message', msg);
             appendMessage(msg);
             input.value = '';
@@ -221,8 +170,7 @@
         function appendMessage(m) {
             const container = document.getElementById('chat-messages');
             const isMe = m.from === currentUser.id;
-            container.innerHTML += `<div class="msg-bubble ${isMe ? 'msg-sent' : 'msg-received'}">${m.text}</div>`;
-            container.scrollTop = container.scrollHeight;
+            container.innerHTML += `<div class="p-3 rounded-xl max-w-[80%] ${isMe ? 'bg-gold text-black self-start' : 'bg-white/10 self-end'}">${m.text}</div>`;
         }
     </script>
 </body>
