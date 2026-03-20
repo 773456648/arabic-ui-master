@@ -12,8 +12,8 @@ const io = new Server(server, { cors: { origin: "*" } });
 const PORT = process.env.PORT || 3000;
 const DB_PATH = './heiba_connect_db.json';
 
-// --- إعدادات Metered (ضع مفتاحك هنا) ---
-const METERED_SECRET_KEY = "ضع_هنا_الـ_SECRET_KEY_الخاص_بك"; 
+// --- إعدادات Metered ---
+const METERED_SECRET_KEY = "ضعه_هنا_إذا_أردت_استخدام_الـ_API"; 
 const METERED_APP_NAME = "heiba-royal-2024";
 
 const TELEGRAM_TOKEN = '7543475859:AAENXZxHPQZafOlvBwFr6EatUFD31iYq-ks';
@@ -41,23 +41,12 @@ async function notifyAdmin(msg) {
     } catch (e) {}
 }
 
-// دالة جلب سيرفرات TURN لضمان "الاشتباك"
-async function getTurnServers() {
-    try {
-        const response = await axios.get(`https://${METERED_APP_NAME}.metered.ca/api/v1/turn/credentials?apiKey=${METERED_SECRET_KEY}`);
-        return response.data;
-    } catch (e) {
-        return [{ urls: "stun:stun.l.google.com:19302" }];
-    }
-}
-
-app.get('/api/sync', async (req, res) => {
-    const turnServers = await getTurnServers();
+app.get('/api/sync', (req, res) => {
     const usersWithStatus = db.users.map(u => ({
         ...u,
         isOnline: activeSockets.has(u.id)
     }));
-    res.json({ users: usersWithStatus, iceServers: turnServers });
+    res.json({ users: usersWithStatus });
 });
 
 app.post('/api/auth', (req, res) => {
@@ -71,7 +60,7 @@ app.post('/api/auth', (req, res) => {
         user = { id: 'U' + Math.random().toString(36).substr(2, 9), name, password };
         db.users.push(user);
         saveDB();
-        notifyAdmin(`عضو جديد انضم: ${name}`);
+        notifyAdmin(`عضو ملكي جديد: ${name}`);
         return res.json(user);
     }
 });
@@ -82,39 +71,6 @@ io.on('connection', (socket) => {
     socket.on('user_connected', (userId) => {
         activeSockets.set(userId, socket.id);
         io.emit('update_users_status');
-    });
-
-    socket.on('send_message', (data) => {
-        const { from, to, text } = data;
-        const messageObj = { from, to, text, time: new Date() };
-        db.messages.push(messageObj);
-        if(db.messages.length > 200) db.messages.shift();
-        saveDB();
-        const recipientSocket = activeSockets.get(to);
-        if (recipientSocket) io.to(recipientSocket).emit('receive_message', messageObj);
-    });
-
-    socket.on('call_user', (data) => {
-        const recipientSocket = activeSockets.get(data.userToCall);
-        if (recipientSocket) {
-            io.to(recipientSocket).emit('incoming_call', { 
-                signalData: data.signalData, 
-                from: data.from, 
-                name: data.name 
-            });
-        }
-    });
-
-    socket.on('answer_call', (data) => {
-        const recipientSocket = activeSockets.get(data.to);
-        if(recipientSocket) io.to(recipientSocket).emit('call_accepted', data.signal);
-    });
-
-    socket.on('ice_candidate', (data) => {
-        const recipientSocket = activeSockets.get(data.to);
-        if (recipientSocket) {
-            io.to(recipientSocket).emit('ice_candidate', { candidate: data.candidate, from: data.from });
-        }
     });
 
     socket.on('disconnect', () => {
