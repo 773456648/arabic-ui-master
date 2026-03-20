@@ -7,75 +7,66 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Changa:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.metered.ca/sdk/frame/1.4.3/sdk-frame.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
+
     <style>
         :root { --gold: #d4af37; --bg: #0a0a0c; }
         body { background: var(--bg); color: #fff; font-family: 'Changa', sans-serif; overflow: hidden; height: 100vh; }
         .gold-text { color: var(--gold); }
-        .video-container { position: relative; width: 100%; height: 70vh; background: #000; border-radius: 20px; border: 1px solid var(--gold); overflow: hidden; }
-        .remote-video { width: 100%; height: 100%; object-fit: cover; }
-        .local-video { position: absolute; bottom: 20px; right: 20px; width: 120px; height: 160px; border-radius: 12px; border: 2px solid var(--gold); }
+        /* تصميم إطار الفيديو ليكون فخماً */
+        #metered-frame { width: 100%; height: 75vh; border-radius: 20px; border: 2px solid var(--gold); overflow: hidden; background: #000; box-shadow: 0 0 30px rgba(212, 175, 55, 0.1); }
+        .user-card:hover { background: rgba(212, 175, 55, 0.05); }
     </style>
 </head>
 <body class="flex flex-col">
 
-    <div id="auth-ui" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
-        <div class="bg-[#131318] w-full max-w-md p-10 rounded-3xl border border-gold/20 text-center">
-            <i class="fa-solid fa-crown text-5xl gold-text mb-4"></i>
-            <h1 class="text-3xl font-black mb-6">HEIBA <span class="gold-text">ROYAL</span></h1>
-            <input id="u-name" type="text" placeholder="اسم المستخدم" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10 focus:border-gold">
-            <input id="u-pass" type="password" placeholder="كلمة المرور" class="w-full bg-white/5 p-4 rounded-xl mb-6 outline-none border border-white/10 focus:border-gold">
-            <button onclick="doAuth()" class="w-full bg-gold text-black font-bold py-4 rounded-xl shadow-lg">تسجيل الدخول</button>
+    <div id="auth-ui" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4">
+        <div class="bg-[#131318] w-full max-w-md p-10 rounded-3xl border border-gold/20 text-center shadow-2xl">
+            <i class="fa-solid fa-crown text-6xl gold-text mb-6"></i>
+            <h1 class="text-3xl font-black mb-8 tracking-widest">HEIBA <span class="gold-text">ROYAL</span></h1>
+            <input id="u-name" type="text" placeholder="اسم المستخدم" class="w-full bg-white/5 p-4 rounded-xl mb-4 outline-none border border-white/10 focus:border-gold text-center">
+            <input id="u-pass" type="password" placeholder="كلمة المرور" class="w-full bg-white/5 p-4 rounded-xl mb-8 outline-none border border-white/10 focus:border-gold text-center">
+            <button onclick="doAuth()" class="w-full bg-gold text-black font-bold py-4 rounded-xl shadow-lg hover:bg-yellow-500 transition-all">فتح النظام الملكي</button>
         </div>
     </div>
 
     <div id="main-ui" class="hidden flex h-screen w-full">
         <div class="w-80 bg-[#131318] border-l border-white/5 flex flex-col">
-            <div class="p-4 border-b border-white/5 flex justify-between">
-                <span id="my-name" class="font-bold">...</span>
-                <i class="fa-solid fa-shield-halved gold-text"></i>
+            <div class="p-6 border-b border-white/5 flex justify-between items-center bg-black/20">
+                <span id="my-name" class="font-bold gold-text text-xl">...</span>
+                <i class="fa-solid fa-shield-halved text-gray-500"></i>
             </div>
             <div id="users-list" class="flex-1 overflow-y-auto"></div>
         </div>
 
-        <div class="flex-1 flex flex-col bg-[#0f0f13]">
-            <div id="chat-header" class="hidden h-16 border-b border-white/5 flex items-center justify-between px-6">
-                <h3 id="chat-user-name" class="font-bold">...</h3>
-                <div class="flex gap-6">
-                    <button onclick="initiateCall('video')" class="gold-text text-xl"><i class="fa-solid fa-video"></i></button>
+        <div class="flex-1 flex flex-col bg-[#0f0f13] relative">
+            <div id="welcome-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-[#0f0f13] z-10">
+                <i class="fa-solid fa-fingerprint text-7xl text-gray-800 mb-4"></i>
+                <h2 class="text-gray-500 text-xl">في انتظار اختيار الهدف...</h2>
+            </div>
+
+            <div id="chat-header" class="hidden h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#131318] z-20">
+                <h3 id="chat-user-name" class="font-bold text-xl">...</h3>
+                <div class="flex gap-4">
+                    <button onclick="startRoyalCall()" class="bg-gold/10 hover:bg-gold/20 text-gold px-6 py-2 rounded-full border border-gold/30 transition">
+                        <i class="fa-solid fa-video ml-2"></i> اشتباك فيديو
+                    </button>
                 </div>
             </div>
-            <div id="chat-messages" class="flex-1 p-6 overflow-y-auto flex flex-col gap-3"></div>
-            <div id="chat-input-area" class="hidden p-4 bg-[#131318]">
-                <div class="flex gap-3 bg-white/5 p-2 rounded-2xl">
-                    <input id="msg-input" type="text" class="flex-1 bg-transparent px-2 outline-none" placeholder="اكتب رسالتك...">
-                    <button onclick="sendMessage()" class="bg-gold text-black p-2 rounded-xl px-4"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
+
+            <div id="video-display" class="hidden flex-1 p-6 z-20 overflow-y-auto">
+                <div id="metered-frame"></div>
+                <button onclick="location.reload()" class="mt-4 w-full bg-red-600/20 text-red-500 py-3 rounded-xl border border-red-600/30 hover:bg-red-600 hover:text-white transition">إنهاء الجلسة</button>
             </div>
         </div>
     </div>
-
-    <div id="call-screen" class="hidden fixed inset-0 z-[200] bg-black/95 flex flex-col items-center justify-center p-6">
-        <div class="video-container">
-            <video id="remoteVideo" autoplay playsinline class="remote-video"></video>
-            <video id="localVideo" autoplay playsinline muted class="local-video"></video>
-        </div>
-        <button onclick="location.reload()" class="mt-8 bg-red-600 w-16 h-16 rounded-full"><i class="fa-solid fa-phone-slash text-2xl"></i></button>
-    </div>
-
-    <div id="incoming-modal" class="hidden fixed top-5 left-1/2 -translate-x-1/2 bg-[#1a1a20] border border-gold p-5 rounded-2xl z-[300] flex items-center gap-10">
-        <div class="text-white font-bold">اتصال من: <span id="caller-name"></span></div>
-        <div class="flex gap-4">
-            <button onclick="acceptCall()" class="bg-green-600 p-3 rounded-full"><i class="fa-solid fa-phone"></i></button>
-            <button onclick="location.reload()" class="bg-red-600 p-3 rounded-full"><i class="fa-solid fa-phone-slash"></i></button>
-        </div>
-    </div>
-
-    <audio id="ringtone" src="https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3" loop></audio>
 
     <script>
-        let currentUser, selectedUser, socket, localStream, peerConnection;
-        let servers = { iceServers: [] };
+        let currentUser, selectedUser, socket;
+        // ملاحظة: الرابط أدناه هو رابط غرفتك الذي أنشأته
+        const ROOM_URL = "heiba-royal-2024.metered.ca/heiba-royal-2024"; 
 
         async function doAuth() {
             const name = document.getElementById('u-name').value;
@@ -88,13 +79,12 @@
                 document.getElementById('main-ui').classList.remove('hidden');
                 document.getElementById('my-name').innerText = currentUser.name;
                 fetchSync(); initializeSocket();
-            }
+            } else alert(data.error);
         }
 
         async function fetchSync() {
             const res = await fetch('/api/sync');
             const data = await res.json();
-            if (data.iceServers) servers.iceServers = data.iceServers;
             renderUsers(data.users);
         }
 
@@ -102,75 +92,36 @@
             socket = io();
             socket.emit('user_connected', currentUser.id);
             socket.on('update_users_status', fetchSync);
-            socket.on('receive_message', appendMessage);
-            socket.on('incoming_call', (data) => {
-                window.callData = data;
-                document.getElementById('caller-name').innerText = data.name;
-                document.getElementById('incoming-modal').classList.remove('hidden');
-                document.getElementById('ringtone').play();
-            });
-            socket.on('call_accepted', async (signal) => { await peerConnection.setRemoteDescription(new RTCSessionDescription(signal)); });
-            socket.on('ice_candidate', async (data) => { if (peerConnection) await peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate)); });
-        }
-
-        async function initiateCall(type) {
-            document.getElementById('call-screen').classList.remove('hidden');
-            peerConnection = new RTCPeerConnection(servers);
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.onicecandidate = e => e.candidate && socket.emit('ice_candidate', { to: selectedUser.id, candidate: e.candidate, from: currentUser.id });
-            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            socket.emit('call_user', { userToCall: selectedUser.id, from: currentUser.id, name: currentUser.name, signalData: offer });
-        }
-
-        async function acceptCall() {
-            document.getElementById('ringtone').pause();
-            document.getElementById('incoming-modal').classList.add('hidden');
-            document.getElementById('call-screen').classList.remove('hidden');
-            peerConnection = new RTCPeerConnection(servers);
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById('localVideo').srcObject = localStream;
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.onicecandidate = e => e.candidate && socket.emit('ice_candidate', { to: window.callData.from, candidate: e.candidate, from: currentUser.id });
-            peerConnection.ontrack = e => document.getElementById('remoteVideo').srcObject = e.streams[0];
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(window.callData.signalData));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            socket.emit('answer_call', { to: window.callData.from, signal: answer });
         }
 
         function renderUsers(users) {
             const list = document.getElementById('users-list');
             list.innerHTML = users.filter(u => u.id !== currentUser.id).map(u => `
-                <div onclick="openChat('${u.id}', '${u.name}')" class="p-4 border-b border-white/5 cursor-pointer hover:bg-white/5">
-                    <div class="font-bold">${u.name}</div>
-                    <div class="text-xs ${u.isOnline ? 'text-green-500' : 'text-gray-500'}">${u.isOnline ? 'متصل الآن' : 'غير متصل'}</div>
+                <div onclick="openTarget('${u.id}', '${u.name}')" class="user-card p-5 border-b border-white/5 cursor-pointer transition-all">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 rounded-full ${u.isOnline ? 'bg-green-500 shadow-[0_0_10px_#22c55e]' : 'bg-gray-600'}"></div>
+                        <div class="font-bold text-lg">${u.name}</div>
+                    </div>
                 </div>
             `).join('');
         }
 
-        function openChat(id, name) {
+        function openTarget(id, name) {
             selectedUser = { id, name };
+            document.getElementById('welcome-screen').classList.add('hidden');
             document.getElementById('chat-header').classList.remove('hidden');
-            document.getElementById('chat-input-area').classList.remove('hidden');
             document.getElementById('chat-user-name').innerText = name;
         }
 
-        function sendMessage() {
-            const input = document.getElementById('msg-input');
-            const msg = { from: currentUser.id, to: selectedUser.id, text: input.value };
-            socket.emit('send_message', msg);
-            appendMessage(msg);
-            input.value = '';
-        }
-
-        function appendMessage(m) {
-            const container = document.getElementById('chat-messages');
-            const isMe = m.from === currentUser.id;
-            container.innerHTML += `<div class="p-3 rounded-xl max-w-[80%] ${isMe ? 'bg-gold text-black self-start' : 'bg-white/10 self-end'}">${m.text}</div>`;
+        function startRoyalCall() {
+            document.getElementById('video-display').classList.remove('hidden');
+            // تشغيل الـ SDK Frame الذي نسخته أنت
+            const frame = new MeteredFrame();
+            frame.init({
+                rows: 1,
+                cols: 1,
+                roomURL: ROOM_URL
+            }, document.getElementById("metered-frame"));
         }
     </script>
 </body>
