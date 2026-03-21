@@ -1,1691 +1,598 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>HEIBA | المنصة المالية المتكاملة</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Changa:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>FADI CYBER SUITE | المقر الإلكتروني المتقدم</title>
     <style>
-        /* =========================================================
-           HEIBA FINANCIAL PLATFORM - FULL STYLESHEET
-           ========================================================= */
-
-        :root {
-            --gold-primary: #d4af37;
-            --gold-light: #f3e5ab;
-            --gold-dark: #aa7c11;
-            --bg-dark: #07070a;
-            --surface-dark: rgba(18, 18, 24, 0.75);
-            --border-subtle: rgba(255, 255, 255, 0.06);
-            --red-soft: rgba(239, 68, 68, 0.15);
-            --green-soft: rgba(34, 197, 94, 0.15);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none; /* لجعل النص غير قابل للتحديد كأنه واجهة نظام */
         }
-
-        * { box-sizing: border-box; }
 
         body {
-            background-color: var(--bg-dark);
-            background-image:
-                radial-gradient(ellipse at 20% 0%, rgba(212, 175, 55, 0.07) 0%, transparent 55%),
-                radial-gradient(ellipse at 80% 100%, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
-            color: #f0f0f0;
-            font-family: 'Changa', sans-serif;
-            overflow-x: hidden;
-            min-height: 100vh;
+            background: #000;
+            overflow: hidden;
+            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            height: 100vh;
+            width: 100vw;
         }
 
-        /* ── شاشة التحميل ── */
-        #splash-screen {
-            position: fixed; inset: 0; z-index: 99999;
-            background: #07070a;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center; gap: 24px;
-            transition: opacity 0.6s ease, visibility 0.6s ease;
-        }
-        #splash-screen.hide { opacity: 0; visibility: hidden; }
-        .splash-logo {
-            font-size: 90px; font-weight: 900; font-style: italic;
-            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            animation: splashPulse 1.5s ease-in-out infinite alternate;
-            letter-spacing: -4px;
-        }
-        @keyframes splashPulse {
-            from { filter: drop-shadow(0 0 15px rgba(212,175,55,0.3)); }
-            to   { filter: drop-shadow(0 0 40px rgba(212,175,55,0.7)); }
-        }
-        .splash-bar-wrap {
-            width: 220px; height: 3px;
-            background: rgba(255,255,255,0.08); border-radius: 99px; overflow: hidden;
-        }
-        .splash-bar {
+        /* تأثير الخلفية ثلاثي الأبعاد (شبكة سايبر) */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, var(--gold-dark), var(--gold-primary), var(--gold-light));
-            border-radius: 99px;
-            animation: splashLoad 1.8s ease forwards;
+            z-index: -2;
+            opacity: 0.35;
         }
-        @keyframes splashLoad { from { width: 0%; } to { width: 100%; } }
 
-        /* ── نصوص ذهبية ── */
-        .gold-text {
-            background: linear-gradient(135deg, var(--gold-light), var(--gold-primary), var(--gold-dark));
-            -webkit-background-clip: text; background-clip: text; color: transparent;
+        /* طبقة ضبابية */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, #000 100%);
+            z-index: -1;
         }
-        .gold-border { border-color: rgba(212,175,55,0.35) !important; }
 
-        /* ── أزرار ذهبية ── */
-        .gold-btn {
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-            color: #000; font-weight: 700;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 14px rgba(212,175,55,0.25);
+        /* الحاوية الرئيسية */
+        .dashboard {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            backdrop-filter: blur(2px);
         }
-        .gold-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(212,175,55,0.45);
-            filter: brightness(1.08);
-        }
-        .gold-btn:active { transform: translateY(0); }
 
-        /* ── بطاقات زجاجية ── */
-        .glass-card {
-            background: var(--surface-dark);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border-subtle);
-            border-radius: 24px;
-            box-shadow: 0 8px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04);
-            transition: border-color 0.25s ease, transform 0.2s ease;
-        }
-        .glass-card:hover { border-color: rgba(212,175,55,0.2); }
-
-        /* ── حقول الإدخال ── */
-        input, select, textarea {
-            background: rgba(0,0,0,0.55) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
-            color: #fff !important; border-radius: 14px;
-            padding: 13px 16px; width: 100%; outline: none;
-            transition: all 0.2s;
-            font-family: 'Changa', sans-serif;
-        }
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--gold-primary) !important;
-            box-shadow: 0 0 0 3px rgba(212,175,55,0.18);
-        }
-        input::placeholder { color: rgba(255,255,255,0.3); }
-        select option { background: #111; color: #fff; }
-
-        /* ── أزرار نوع الحساب ── */
-        .type-select {
-            border: 2px solid rgba(255,255,255,0.08);
-            background: rgba(0,0,0,0.35);
-            transition: all 0.25s; cursor: pointer;
-            border-radius: 18px;
-        }
-        .type-select.active {
-            border-color: var(--gold-primary);
-            background: rgba(212,175,55,0.08);
-            box-shadow: 0 0 20px rgba(212,175,55,0.15);
-        }
-        .type-select:hover:not(.active) { border-color: rgba(255,255,255,0.2); }
-
-        /* ── Toast ── */
-        #toast-container {
-            position: fixed; bottom: 24px; left: 24px;
-            z-index: 9999; display: flex; flex-direction: column; gap: 10px;
-        }
-        .toast {
-            min-width: 270px; padding: 13px 18px; border-radius: 16px;
-            background: rgba(10,10,14,0.97);
+        /* الشريط العلوي */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 20, 30, 0.75);
             backdrop-filter: blur(12px);
-            border-right: 4px solid var(--gold-primary);
+            border-bottom: 1px solid #0ff;
+            border-radius: 12px 12px 0 0;
+            padding: 12px 24px;
+            box-shadow: 0 0 15px rgba(0,255,255,0.2);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            background: linear-gradient(45deg, #0ff, #f0f);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+
+        .status {
+            font-size: 0.8rem;
+            color: #0ff;
+            display: flex;
+            gap: 20px;
+        }
+
+        .blink-red {
+            animation: blink 1s step-end infinite;
+            color: #f44;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* المحتوى الرئيسي: ثلاث أعمدة */
+        .main-grid {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            min-height: 0;
+        }
+
+        /* العمود الأيسر: أدوات الهجوم */
+        .tools-panel {
+            width: 280px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(0, 255, 255, 0.4);
+            padding: 18px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(0,255,255,0.1);
+        }
+
+        .tools-panel h3 {
+            color: #0ff;
+            text-align: center;
+            border-bottom: 1px dashed #0ff;
+            padding-bottom: 8px;
+            font-size: 1.2rem;
+        }
+
+        .tool-btn {
+            background: #111c28;
+            border: 1px solid #0ff;
+            color: #0ff;
+            padding: 12px;
+            border-radius: 12px;
+            font-family: monospace;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .tool-btn:hover {
+            background: #0ff;
+            color: #000;
+            box-shadow: 0 0 20px #0ff;
+            transform: scale(1.02);
+        }
+
+        /* العمود الأوسط: المنطقة الطرفية والرسوم */
+        .center-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            min-width: 0;
+        }
+
+        .terminal-window {
+            background: #03070cee;
+            border-radius: 16px;
+            border: 1px solid #0ff;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 55%;
+        }
+
+        .term-header {
+            background: #0a121c;
+            padding: 8px 15px;
+            border-bottom: 1px solid #0ff;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #0ff;
+        }
+
+        .term-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .log-line {
+            margin-bottom: 5px;
+            border-left: 2px solid #0ff;
+            padding-left: 10px;
+            color: #cfc;
+        }
+
+        .log-time {
+            color: #0ff;
+            margin-right: 10px;
+        }
+
+        /* منطقة الرسوم البيانية */
+        .graphs {
+            background: rgba(0,0,0,0.6);
+            border-radius: 16px;
+            border: 1px solid #0ff;
+            padding: 12px;
+            height: 40%;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .graph-card {
+            flex: 1;
+            background: #07131e;
+            border-radius: 12px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .graph-card canvas {
+            width: 100%;
+            height: 100px;
+            background: #00000066;
+            border-radius: 8px;
+        }
+
+        /* العمود الأيمن: معلومات النظام والهدف */
+        .info-panel {
+            width: 300px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid #f0f;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 0 20px rgba(255,0,255,0.1);
+        }
+
+        .info-card {
+            background: #0a1018;
+            border-radius: 12px;
+            padding: 10px;
+            border-left: 4px solid #f0f;
+        }
+
+        .info-title {
+            color: #f0f;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+        }
+
+        .target-ip {
+            font-size: 1.3rem;
+            font-weight: bold;
             color: #fff;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-            font-weight: 500; font-size: 14px;
-            display: flex; align-items: center; gap: 10px;
-            transform: translateX(-130%);
-            transition: transform 0.35s cubic-bezier(0.34,1.2,0.64,1);
-        }
-        .toast.show { transform: translateX(0); }
-        .toast.error { border-right-color: #ef4444; }
-        .toast.success { border-right-color: #22c55e; }
-        .toast.info { border-right-color: #3b82f6; }
-
-        /* ── شارة الموثق ── */
-        @keyframes glassGlow {
-            0%   { background-position: -150%; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
-            50%  { box-shadow: 0 0 22px rgba(34,197,94,0.7), 0 0 8px white; }
-            100% { background-position: 150%; box-shadow: 0 0 8px rgba(34,197,94,0.4); }
-        }
-        .verified-badge {
-            position: relative; display: inline-flex; align-items: center;
-            background: linear-gradient(135deg, rgba(34,197,94,0.9) 0%, rgba(255,255,255,0.35) 50%, rgba(34,197,94,0.9) 100%);
-            background-size: 200% auto;
-            color: white; padding: 2px 9px; border-radius: 50px;
-            vertical-align: middle; gap: 4px; margin-right: 4px;
-            overflow: hidden; animation: glassGlow 4s linear infinite;
-            border: 1px solid rgba(255,255,255,0.2);
-            backdrop-filter: blur(2px); font-size: 10px; font-weight: 700;
-            white-space: nowrap; cursor: default;
-        }
-        .verified-name-glow {
-            background: linear-gradient(90deg, #fff, #22c55e, #fff);
-            background-size: 200% auto;
-            -webkit-background-clip: text; background-clip: text; color: transparent;
-            animation: verified-shimmer 3s linear infinite;
-        }
-        @keyframes verified-shimmer { to { background-position: 200% center; } }
-
-        /* ── Tooltip ── */
-        [data-tooltip] { position: relative; cursor: help; }
-        [data-tooltip]::before {
-            content: attr(data-tooltip);
-            position: absolute; bottom: 130%; left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.9); color: #fff;
-            padding: 5px 10px; border-radius: 10px;
-            font-size: 11px; white-space: nowrap;
-            z-index: 99; opacity: 0; pointer-events: none;
-            transition: opacity 0.18s; border: 1px solid rgba(255,255,255,0.1);
-        }
-        [data-tooltip]:hover::before { opacity: 1; }
-
-        /* ── أنيميشن Fade ── */
-        .fade-in { animation: fadeIn 0.45s ease forwards; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(12px); }
-            to   { opacity: 1; transform: translateY(0); }
+            word-break: break-all;
         }
 
-        /* ── Scrollbar ── */
-        ::-webkit-scrollbar { width: 4px; height: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(212,175,55,0.3); border-radius: 10px; }
-
-        /* ── مؤشر الاتصال ── */
-        #connection-indicator {
-            position: fixed; top: 16px; left: 16px; z-index: 9998;
-            display: flex; align-items: center; gap: 7px;
-            background: rgba(0,0,0,0.75); backdrop-filter: blur(8px);
-            padding: 6px 12px; border-radius: 20px;
-            font-size: 11px; font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.08);
-            transition: all 0.3s;
+        .fake-progress {
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
         }
-        .conn-dot {
-            width: 8px; height: 8px; border-radius: 50%;
-            animation: connPulse 1.5s ease-in-out infinite;
-        }
-        .conn-dot.online  { background: #22c55e; }
-        .conn-dot.offline { background: #ef4444; animation: none; }
-        .conn-dot.syncing { background: #f59e0b; }
-        @keyframes connPulse {
-            0%,100% { opacity: 1; transform: scale(1); }
-            50%      { opacity: 0.5; transform: scale(0.8); }
+        .fake-progress span {
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: #0ff;
+            transition: width 0.3s;
         }
 
-        /* ── Navigation Tabs (للجوال) ── */
-        #bottom-nav {
-            display: none;
-            position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-            background: rgba(7,7,10,0.97); backdrop-filter: blur(16px);
-            border-top: 1px solid rgba(255,255,255,0.07);
-            padding: 10px 0 env(safe-area-inset-bottom, 10px);
+        /* تأثير الشاشة */
+        .scan-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: rgba(0,255,255,0.3);
+            animation: scan 8s linear infinite;
+            pointer-events: none;
+            z-index: 10;
         }
-        @media (max-width: 768px) {
-            #bottom-nav { display: flex; }
-            body { padding-bottom: 70px !important; }
-        }
-        .nav-tab {
-            flex: 1; display: flex; flex-direction: column;
-            align-items: center; gap: 3px; padding: 6px;
-            font-size: 10px; color: rgba(255,255,255,0.4);
-            cursor: pointer; transition: color 0.2s;
-            border: none; background: none;
-        }
-        .nav-tab.active { color: var(--gold-primary); }
-        .nav-tab span { font-size: 20px; }
-
-        /* ── بطاقات الإحصاء ── */
-        .stat-card {
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px; padding: 16px;
-            transition: all 0.2s;
-        }
-        .stat-card:hover { border-color: rgba(212,175,55,0.25); }
-
-        /* ── سطر العملية ── */
-        .op-row {
-            border-radius: 14px; padding: 14px 16px;
-            display: flex; justify-content: space-between; align-items: center;
-            transition: transform 0.15s ease;
-        }
-        .op-row:hover { transform: translateX(-3px); }
-        .op-row.debt   { background: rgba(239,68,68,0.07);  border-right: 3px solid rgba(239,68,68,0.5); }
-        .op-row.credit { background: rgba(34,197,94,0.07);  border-right: 3px solid rgba(34,197,94,0.5); }
-
-        /* ── المودال ── */
-        .modal-backdrop {
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(4px);
-        }
-        .modal-content {
-            animation: modalIn 0.3s cubic-bezier(0.34,1.2,0.64,1);
-        }
-        @keyframes modalIn {
-            from { opacity:0; transform: scale(0.92) translateY(20px); }
-            to   { opacity:1; transform: scale(1) translateY(0); }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
         }
 
-        /* ── دليل المستخدم steps ── */
-        .guide-step {
-            display: flex; gap: 14px; align-items: flex-start;
-            padding: 14px; border-radius: 14px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 10px;
-            transition: background 0.2s;
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            color: #0ff6;
         }
-        .guide-step:hover { background: rgba(212,175,55,0.05); }
-        .guide-num {
-            min-width: 32px; height: 32px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--gold-primary), var(--gold-dark));
-            color: #000; font-weight: 800; font-size: 14px;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
-        }
-
-        /* ── بطاقة التاجر/المواطن في القائمة ── */
-        .list-item {
-            padding: 14px 16px;
-            background: rgba(0,0,0,0.4);
-            border-radius: 14px; cursor: pointer;
-            border: 1px solid rgba(255,255,255,0.05);
-            transition: all 0.2s;
-            display: flex; align-items: center; gap: 12px;
-        }
-        .list-item:hover   { border-color: rgba(212,175,55,0.4); background: rgba(212,175,55,0.04); }
-        .list-item.selected { border-color: var(--gold-primary); background: rgba(212,175,55,0.08); box-shadow: 0 0 15px rgba(212,175,55,0.1); }
-        .list-avatar {
-            width: 42px; height: 42px; border-radius: 12px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; flex-shrink: 0;
-        }
-
-        /* ── شريط التقدم الدوري ── */
-        .progress-ring { transform: rotate(-90deg); }
-        .progress-ring circle {
-            transition: stroke-dashoffset 0.8s ease;
-            stroke-linecap: round;
-        }
-
-        /* ── Watermark طباعة ── */
-        @media print {
-            #splash-screen, #toast-container, #connection-indicator,
-            #bottom-nav, header, .no-print { display: none !important; }
-            body { background: white !important; color: black !important; }
-            .glass-card { background: white !important; border: 1px solid #ddd !important; box-shadow: none !important; }
-            .gold-text { color: #aa7c11 !important; -webkit-background-clip: initial; background-clip: initial; background: none !important; }
-        }
-
-        /* ── Tafqit box ── */
-        .tafqit-box {
-            background: rgba(212,175,55,0.08);
-            border: 1px solid rgba(212,175,55,0.2);
-            border-radius: 12px; padding: 10px 14px;
-            color: var(--gold-light);
-        }
-
-        /* ── شريط العلامات في رأس الصفحة ── */
-        .header-pill {
-            display: inline-flex; align-items: center; gap: 6px;
-            padding: 4px 12px; border-radius: 20px;
-            font-size: 11px; font-weight: 700;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        /* ── تأثير المسح (shimmer) على بطاقات التحميل ── */
-        .shimmer {
-            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.07) 50%, rgba(255,255,255,0.03) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        @keyframes shimmer { to { background-position: -200% 0; } }
     </style>
 </head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+    <div class="overlay"></div>
+    <div class="scan-line"></div>
 
-<body class="p-3 md:p-5">
-
-<!-- ====================== شاشة التحميل ====================== -->
-<div id="splash-screen">
-    <div class="splash-logo">HEIBA</div>
-    <p style="color:rgba(255,255,255,0.3); font-size:12px; letter-spacing:0.3em; text-transform:uppercase;">
-        المنصة المالية المتكاملة
-    </p>
-    <div class="splash-bar-wrap">
-        <div class="splash-bar"></div>
-    </div>
-    <p id="splash-msg" style="color:rgba(255,255,255,0.2); font-size:11px;">جارٍ التحقق من الجلسة...</p>
-</div>
-
-<!-- ====================== مؤشر الاتصال ====================== -->
-<div id="connection-indicator">
-    <div class="conn-dot online" id="conn-dot"></div>
-    <span id="conn-text">متصل</span>
-</div>
-
-<!-- ====================== Toast ====================== -->
-<div id="toast-container"></div>
-
-<!-- ====================== شاشة تسجيل الدخول ====================== -->
-<div id="auth-ui" class="hidden max-w-6xl mx-auto mt-4 space-y-8 fade-in">
-
-    <!-- الهيدر -->
-    <div class="text-center space-y-2 pt-4">
-        <h1 class="text-7xl md:text-9xl font-black gold-text italic tracking-tighter"
-            style="filter: drop-shadow(0 4px 20px rgba(212,175,55,0.25));">HEIBA</h1>
-        <p class="text-[11px] md:text-xs text-gray-500 tracking-[0.4em] uppercase font-light">
-            The Sovereign Financial Platform
-        </p>
-        <div class="flex items-center justify-center gap-3 mt-3">
-            <span class="header-pill bg-green-900/20 text-green-400">🔒 بيانات آمنة</span>
-            <span class="header-pill bg-blue-900/20 text-blue-400">⚡ مزامنة فورية</span>
-            <span class="header-pill bg-yellow-900/20 text-yellow-400">🌐 3 عملات</span>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
-
-        <!-- بطاقة الدخول -->
-        <div class="lg:col-span-3 glass-card p-7 md:p-9 space-y-6 relative overflow-hidden">
-            <div class="absolute -top-20 -right-20 w-56 h-56 bg-yellow-600 rounded-full
-                        mix-blend-multiply filter blur-[90px] opacity-15 pointer-events-none"></div>
-            <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-blue-600 rounded-full
-                        mix-blend-multiply filter blur-[80px] opacity-10 pointer-events-none"></div>
-
-            <div>
-                <h2 class="text-xl font-bold text-white">بوابة الدخول</h2>
-                <p class="text-xs text-gray-500 mt-1">اختر نوع حسابك وأدخل بياناتك</p>
-            </div>
-
-            <!-- نوع الحساب -->
-            <div class="grid grid-cols-2 gap-4">
-                <div id="sel-merchant" onclick="setType('merchant')"
-                     class="type-select active p-5 text-center flex flex-col items-center gap-2"
-                     data-tooltip="لإدارة العملاء والديون">
-                    <span class="text-4xl">🏪</span>
-                    <span class="font-bold text-sm">تاجر</span>
-                    <span class="text-[10px] text-gray-500">إدارة الحسابات</span>
-                </div>
-                <div id="sel-debtor" onclick="setType('debtor')"
-                     class="type-select p-5 text-center flex flex-col items-center gap-2"
-                     data-tooltip="لمتابعة ديونك مع التجار">
-                    <span class="text-4xl">👤</span>
-                    <span class="font-bold text-sm">مواطن</span>
-                    <span class="text-[10px] text-gray-500">متابعة الحسابات</span>
-                </div>
-            </div>
-
-            <!-- حقول الإدخال -->
-            <div class="space-y-4">
-                <div class="relative">
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-base">👤</span>
-                    <input id="u-name" type="text" placeholder="الاسم الكامل كما تريده أن يظهر" class="pr-11">
-                </div>
-                <div class="relative">
-                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 text-base">🔒</span>
-                    <input id="u-pass" type="password" placeholder="كلمة المرور"
-                           class="pr-11" onkeypress="if(event.key==='Enter') doAuth('login')">
-                    <button onclick="togglePass('u-pass')"
-                            class="absolute left-4 top-1/2 -translate-y-1/2 opacity-40 hover:opacity-100 transition text-lg"
-                            aria-label="إظهار كلمة المرور">👁️</button>
-                </div>
-            </div>
-
-            <!-- تذكرني -->
-            <label class="flex items-center gap-3 cursor-pointer group w-fit">
-                <input type="checkbox" id="remember-me"
-                       class="!w-5 !h-5 !rounded-md accent-yellow-400 flex-shrink-0">
-                <span class="text-xs text-gray-500 group-hover:text-white transition select-none">
-                    تذكرني (دخول تلقائي في المرة القادمة)
-                </span>
-            </label>
-
-            <!-- أزرار -->
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="doAuth('login')"
-                        class="bg-zinc-800 border border-white/10 py-[14px] rounded-xl font-bold
-                               hover:bg-zinc-700 hover:border-white/20 transition text-sm">
-                    تسجيل دخول
-                </button>
-                <button onclick="doAuth('reg')"
-                        class="gold-btn py-[14px] rounded-xl font-bold text-sm">
-                    إنشاء حساب جديد
-                </button>
-            </div>
-
-            <!-- دليل سريع -->
-            <button onclick="openModal('guide-modal')"
-                    class="w-full text-center text-xs text-gray-500 hover:text-gold-primary
-                           transition flex items-center justify-center gap-2 py-2">
-                <span>📖</span>
-                <span>كيف تستخدم المنصة؟ — دليل المستخدم</span>
-            </button>
-        </div>
-
-        <!-- لوحة المعلومات -->
-        <div class="lg:col-span-2 flex flex-col gap-5">
-            <div class="glass-card p-5">
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-2xl">✨</span>
-                    <h3 class="font-bold gold-text text-lg">منصة HEIBA</h3>
-                </div>
-                <p class="text-gray-400 text-sm leading-relaxed border-r-2 border-yellow-600/50 pr-3">
-                    "أكلوا وشربوا وعلى الحق اتحاسبوا" — حلقة وصل مالية شفافة
-                    تتيح للتجار إدارة ديون عملائهم بدقة، وللمواطنين متابعة
-                    حساباتهم لحظة بلحظة.
-                </p>
-            </div>
-            <div class="glass-card p-5">
-                <div class="flex items-center gap-2 mb-3">
-                    <span>🏪</span>
-                    <h4 class="font-bold text-sm gold-text">للتاجر</h4>
-                </div>
-                <ul class="text-gray-400 text-xs space-y-1.5">
-                    <li class="flex items-center gap-2"><span class="text-green-400">✓</span> أضف العملاء وسجّل الديون والمدفوعات</li>
-                    <li class="flex items-center gap-2"><span class="text-green-400">✓</span> 3 عملات: ريال يمني، دولار، ريال سعودي</li>
-                    <li class="flex items-center gap-2"><span class="text-green-400">✓</span> الإشعار يصل للمواطن فوراً عند التسجيل</li>
-                    <li class="flex items-center gap-2"><span class="text-green-400">✓</span> </li>
-                </ul>
-            </div>
-            <div class="glass-card p-5">
-                <div class="flex items-center gap-2 mb-3">
-                    <span>👤</span>
-                    <h4 class="font-bold text-sm gold-text">للمواطن</h4>
-                </div>
-                <ul class="text-gray-400 text-xs space-y-1.5">
-                    <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> شاهد رصيدك الكامل مع كل تاجر</li>
-                    <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> كشف حساب تفصيلي بالتواريخ</li>
-                    <li class="flex items-center gap-2"><span class="text-blue-400">✓</span> </li>
-                    <li class="flex items-center gap-2"><span class="text-blue-400">✓</span></li>
-                </ul>
+    <div class="dashboard">
+        <div class="top-bar">
+            <div class="logo">⎈ FADI CYBER SUITE ⎈</div>
+            <div class="status">
+                <span>🟢 SECURE CONNECTION</span>
+                <span class="blink-red">⚡ LIVE EXPLOIT MODE ⚡</span>
+                <span>📡 SESSION: ACTIVE</span>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- ====================== الواجهة الرئيسية ====================== -->
-<div id="main-ui" class="hidden max-w-7xl mx-auto space-y-5 fade-in">
+        <div class="main-grid">
+            <!-- أدوات الهجوم (محاكاة) -->
+            <div class="tools-panel">
+                <h3>⚔️ ARSENAL ⚔️</h3>
+                <button class="tool-btn" id="fullRecon">🌐 FULL RECONNAISSANCE</button>
+                <button class="tool-btn" id="zeroDayExp">💀 ZERO-DAY EXPLOIT</button>
+                <button class="tool-btn" id="netFlood">🌀 NETWORK FLOOD</button>
+                <button class="tool-btn" id="backdoorGen">🔐 BACKDOOR ACCESS</button>
+                <button class="tool-btn" id="wipeLogs">🧹 WIPE TRACES</button>
+                <button class="tool-btn" id="randomTarget">🎯 RANDOM TARGET</button>
+            </div>
 
-    <!-- الهيدر -->
-    <header class="glass-card p-4 md:p-5">
-        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-
-            <!-- الاسم والرتبة -->
-            <div class="flex items-center gap-4 w-full md:w-auto">
-                <div class="relative">
-                    <div class="w-13 h-13 gold-btn rounded-2xl flex items-center justify-center
-                                text-black font-black text-3xl shadow-lg w-[52px] h-[52px]">H</div>
-                    <div id="online-dot"
-                         class="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500
-                                rounded-full border-2 border-[#07070a]"></div>
+            <!-- المنطقة الوسطى -->
+            <div class="center-panel">
+                <div class="terminal-window">
+                    <div class="term-header">
+                        <span>◤ FADI_TERM v3.1.7 ◢</span>
+                        <span>root@fadi:~#</span>
+                    </div>
+                    <div class="term-body" id="terminalLogs">
+                        <div class="log-line"><span class="log-time">[系统]</span> ✅ FADI Cyber Suite initialized.</div>
+                        <div class="log-line"><span class="log-time">[系统]</span> 🔒 جميع العمليات محاكاة بغرض العرض السينمائي.</div>
+                        <div class="log-line"><span class="log-time">[>]</span> 🎯 جاهز لتنفيذ الأوامر. اختر أداة.</div>
+                    </div>
                 </div>
-                <div>
-                    <div id="display-name"
-                         class="text-lg md:text-xl font-black text-white flex items-center gap-2 flex-wrap"></div>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span id="role-tag"
-                              class="text-[10px] px-3 py-0.5 rounded-full font-bold
-                                     bg-yellow-900/20 text-yellow-400 border border-yellow-900/30"></span>
-                        <span id="last-sync-text" class="text-[10px] text-gray-600"></span>
+                <div class="graphs">
+                    <div class="graph-card">
+                        <div>📊 NETWORK THROUGHPUT</div>
+                        <canvas id="trafficChart" width="200" height="80"></canvas>
+                    </div>
+                    <div class="graph-card">
+                        <div>⚙️ SYSTEM LOAD</div>
+                        <canvas id="cpuChart" width="200" height="80"></canvas>
                     </div>
                 </div>
             </div>
 
-            <!-- الأزرار -->
-            <div class="flex items-center gap-2 w-full md:w-auto justify-end">
-                <button onclick="openModal('guide-modal')"
-                        class="bg-zinc-900 p-3 rounded-xl border border-white/8
-                               hover:border-gold-primary/40 transition text-sm"
-                        data-tooltip="دليل الاستخدام">
-                    📖
-                </button>
-                <button onclick="openModal('settings-modal')"
-                        class="bg-zinc-900 p-3 rounded-xl border border-white/8
-                               hover:border-gold-primary/40 transition text-sm"
-                        data-tooltip="الإعدادات">
-                    ⚙️
-                </button>
-                <button onclick="printStatement()"
-                        class="bg-zinc-900 p-3 rounded-xl border border-white/8
-                               hover:border-gold-primary/40 transition text-sm"
-                        data-tooltip="طباعة / تصدير">
-                    🖨️
-                </button>
-                <button onclick="logout()"
-                        class="bg-red-900/15 text-red-400 px-5 py-2.5 rounded-xl text-sm font-bold
-                               border border-red-500/15 hover:bg-red-600 hover:text-white
-                               transition flex items-center gap-2">
-                    <span>خروج</span>
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
-                         viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-                    </svg>
-                </button>
+            <!-- معلومات الهدف والمحاكاة -->
+            <div class="info-panel">
+                <div class="info-card">
+                    <div class="info-title">🎯 TARGET ACTIVE</div>
+                    <div class="target-ip" id="targetIp">185.165.29.101</div>
+                    <div>🌍 LOCATION: Moscow, RU (DataCenter)</div>
+                    <div>🖥️ OS: Linux 5.15 (Ubuntu 22.04)</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">⚡ EXPLOIT READINESS</div>
+                    <div>🔥 CVE-2024-6387 (regreSSHion)</div>
+                    <div class="fake-progress"><span id="expProgress" style="width: 78%;"></span></div>
+                    <div>📡 BACKDOOR STATUS: <span id="backdoorStat">INACTIVE</span></div>
+                </div>
+                <div class="info-card">
+                    <div class="info-title">📡 FAKE DATA STREAM</div>
+                    <div id="packetRate">PKT/s: 0</div>
+                    <div id="bandwidth">BW: 0 Mbps</div>
+                </div>
             </div>
         </div>
-    </header>
-
-    <!-- بطاقات الإحصاء السريعة -->
-    <div class="grid grid-cols-3 gap-4" id="stat-bar">
-        <div class="stat-card text-center">
-            <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">🇾🇪 ريال يمني</p>
-            <p id="gt-yer" class="font-black text-lg text-blue-400">0</p>
-        </div>
-        <div class="stat-card text-center">
-            <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">🇺🇸 دولار</p>
-            <p id="gt-usd" class="font-black text-lg text-green-400">0</p>
-        </div>
-        <div class="stat-card text-center">
-            <p class="text-[10px] text-gray-500 mb-1 uppercase tracking-wider">🇸🇦 سعودي</p>
-            <p id="gt-sar" class="font-black text-lg text-orange-400">0</p>
-        </div>
+        <footer>⚠️ بيئة سينمائية تفاعلية | جميع البيانات المقدمة وهمية لأغراض العرض فقط ⚠️</footer>
     </div>
 
-    <!-- المحتوى الرئيسي -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    <script>
+        // ---- عناصر وهمية متحركة ----
+        const targetIpSpan = document.getElementById('targetIp');
+        const backdoorStatSpan = document.getElementById('backdoorStat');
+        const packetRateSpan = document.getElementById('packetRate');
+        const bandwidthSpan = document.getElementById('bandwidth');
+        const expProgressSpan = document.getElementById('expProgress');
+        const terminalLogs = document.getElementById('terminalLogs');
 
-        <!-- ════ القائمة الجانبية ════ -->
-        <div class="lg:col-span-4 space-y-4" id="sidebar-col">
+        // بيانات عشوائية لتبدو واقعية
+        const ipPool = [
+            "45.33.22.11", "185.130.5.245", "94.232.47.89", "103.115.18.2",
+            "162.247.74.201", "5.188.86.45", "31.184.236.10", "89.208.246.35"
+        ];
+        const locations = ["Amsterdam, NL", "Frankfurt, DE", "Singapore, SG", "Ashburn, US", "Zurich, CH"];
+        const osList = ["Linux 5.10 (Debian)", "Windows Server 2019", "FreeBSD 13.1", "CentOS 7", "Ubuntu 22.04 LTS"];
 
-            <!-- أدوات التاجر -->
-            <div id="merchant-tools" class="hidden glass-card p-4">
-                <p class="text-[10px] text-gray-500 mb-2 uppercase tracking-wider font-bold">إضافة حساب جديد</p>
-                <div class="flex gap-2">
-                    <input id="target-search" class="!text-sm !rounded-xl flex-grow"
-                           placeholder="🔍 اكتب اسم المواطن..."
-                           onkeypress="if(event.key === 'Enter') addTarget()"
-                           oninput="filterList()">
-                    <button onclick="addTarget()"
-                            class="gold-btn px-5 rounded-xl text-xl font-bold hover:scale-105 transition flex-shrink-0"
-                            title="إضافة">+</button>
-                </div>
-                <p class="text-[10px] text-gray-600 mt-2">
-                    💡 اكتب الاسم واضغط <kbd class="bg-white/10 px-1 rounded text-[9px]">Enter</kbd> أو الزر +
-                </p>
-            </div>
-
-            <!-- قائمة الحسابات -->
-            <div class="glass-card p-5 flex flex-col" style="min-height: 420px;">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex items-center gap-2">
-                        <span class="text-gold-primary">📋</span>
-                        <h3 class="text-xs text-gray-300 font-bold uppercase tracking-wider">الحسابات</h3>
-                    </div>
-                    <span id="list-count" class="text-[10px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full"></span>
-                </div>
-                <div id="main-list" class="flex-grow space-y-2 overflow-y-auto" style="max-height: 360px;">
-                    <!-- تُملأ ديناميكياً -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ════ لوحة التفاصيل ════ -->
-        <div class="lg:col-span-8" id="detail-col">
-
-            <!-- Hint فارغ -->
-            <div id="empty-hint"
-                 class="glass-card p-12 text-center text-gray-600
-                        flex flex-col items-center justify-center min-h-[500px]">
-                <span class="text-8xl mb-5 opacity-15">📜</span>
-                <p class="text-xl font-light text-gray-500">اختر حساباً من القائمة</p>
-                <p class="text-sm mt-2 opacity-50">لعرض السجل المالي وإضافة عمليات جديدة</p>
-                <button onclick="openModal('guide-modal')"
-                        class="mt-6 text-xs text-yellow-600 hover:text-yellow-400 transition
-                               flex items-center gap-2 border border-yellow-900/30 px-4 py-2 rounded-xl
-                               hover:border-yellow-600/50">
-                    📖 شاهد دليل الاستخدام
-                </button>
-            </div>
-
-            <!-- لوحة التفاصيل -->
-            <div id="details-pane" class="hidden glass-card p-5 md:p-7 flex flex-col relative" style="min-height:520px;">
-                <!-- خط ذهبي زخرفي -->
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-px
-                            bg-gradient-to-r from-transparent via-yellow-600/40 to-transparent"></div>
-
-                <!-- رأس الحساب -->
-                <div class="flex flex-col md:flex-row justify-between items-start
-                            md:items-center gap-4 mb-5 pb-5 border-b border-white/8">
-                    <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-2xl bg-zinc-800 border border-white/10
-                                    flex items-center justify-center text-lg">👤</div>
-                        <div>
-                            <h3 id="active-target-name" class="text-xl md:text-2xl font-black text-white
-                                                               flex items-center gap-2 flex-wrap"></h3>
-                            <p id="active-target-reg" class="text-[10px] text-gray-500 mt-0.5"></p>
-                        </div>
-                    </div>
-                    <!-- أرصدة العمليات -->
-                    <div class="flex gap-1 bg-black/40 p-2 rounded-2xl border border-white/5">
-                        <div class="text-center px-3 py-2 min-w-[70px]">
-                            <span class="block text-[9px] text-gray-500 mb-1">🇾🇪 يمني</span>
-                            <span id="dt-yer" class="text-blue-400 font-bold text-base leading-none"></span>
-                        </div>
-                        <div class="w-px bg-white/10"></div>
-                        <div class="text-center px-3 py-2 min-w-[70px]">
-                            <span class="block text-[9px] text-gray-500 mb-1">🇺🇸 دولار</span>
-                            <span id="dt-usd" class="text-green-400 font-bold text-base leading-none"></span>
-                        </div>
-                        <div class="w-px bg-white/10"></div>
-                        <div class="text-center px-3 py-2 min-w-[70px]">
-                            <span class="block text-[9px] text-gray-500 mb-1">🇸🇦 سعودي</span>
-                            <span id="dt-sar" class="text-orange-400 font-bold text-base leading-none"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- فلتر العمليات -->
-                <div class="flex gap-2 mb-4" id="ops-filter">
-                    <button onclick="setOpsFilter('all')"
-                            id="f-all" class="filter-btn text-xs px-3 py-1.5 rounded-xl border
-                            border-yellow-600/50 bg-yellow-900/20 text-yellow-400 font-bold transition">
-                        الكل
-                    </button>
-                    <button onclick="setOpsFilter('دين')"
-                            id="f-debt" class="filter-btn text-xs px-3 py-1.5 rounded-xl border
-                            border-white/10 bg-black/30 text-gray-400 font-bold transition hover:border-red-500/50">
-                        ديون فقط
-                    </button>
-                    <button onclick="setOpsFilter('سداد')"
-                            id="f-credit" class="filter-btn text-xs px-3 py-1.5 rounded-xl border
-                            border-white/10 bg-black/30 text-gray-400 font-bold transition hover:border-green-500/50">
-                        سدادات فقط
-                    </button>
-                    <div class="flex-grow"></div>
-                    <span id="ops-count" class="text-[10px] text-gray-600 flex items-center"></span>
-                </div>
-
-                <!-- قائمة العمليات -->
-                <div id="ops-list" class="flex-grow space-y-2 overflow-y-auto mb-5"
-                     style="max-height: 320px;"></div>
-
-                <!-- نموذج الإضافة (للتاجر فقط) -->
-                <div id="add-form" class="hidden">
-                    <div class="bg-gradient-to-b from-zinc-900/70 to-black/80 p-5 rounded-2xl
-                                border border-white/8 space-y-4">
-                        <h4 class="text-xs font-bold text-gold-primary flex items-center gap-2">
-                            ✍️ تسجيل عملية مالية جديدة
-                        </h4>
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                            <div class="md:col-span-4">
-                                <label class="block text-[9px] text-gray-500 mb-1 uppercase tracking-wider">المبلغ</label>
-                                <input id="op-amt" type="number" placeholder="0.00"
-                                       oninput="applyTafqit()" class="!font-bold !text-lg">
-                            </div>
-                            <div class="md:col-span-3">
-                                <label class="block text-[9px] text-gray-500 mb-1 uppercase tracking-wider">العملة</label>
-                                <select id="op-cur" onchange="applyTafqit()" class="!font-bold">
-                                    <option value="YER">🇾🇪 ريال يمني</option>
-                                    <option value="USD">🇺🇸 دولار</option>
-                                    <option value="SAR">🇸🇦 ريال سعودي</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-5">
-                                <label class="block text-[9px] text-gray-500 mb-1 uppercase tracking-wider">نوع العملية</label>
-                                <div class="flex gap-2 h-[46px]">
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="op_type_radio" value="دين"
-                                               class="peer sr-only" checked onchange="updateOpType('دين')">
-                                        <div class="w-full h-full flex items-center justify-center rounded-xl border
-                                                    border-white/8 bg-black/40 text-sm font-bold
-                                                    peer-checked:bg-red-900/25 peer-checked:border-red-500/60
-                                                    peer-checked:text-red-400 transition">
-                                            عليه (دين)
-                                        </div>
-                                    </label>
-                                    <label class="flex-1 cursor-pointer">
-                                        <input type="radio" name="op_type_radio" value="سداد"
-                                               class="peer sr-only" onchange="updateOpType('سداد')">
-                                        <div class="w-full h-full flex items-center justify-center rounded-xl border
-                                                    border-white/8 bg-black/40 text-sm font-bold
-                                                    peer-checked:bg-green-900/25 peer-checked:border-green-500/60
-                                                    peer-checked:text-green-400 transition">
-                                            له (سداد)
-                                        </div>
-                                    </label>
-                                    <input type="hidden" id="op-type" value="دين">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                            <div class="md:col-span-9">
-                                <label class="block text-[9px] text-gray-500 mb-1 uppercase tracking-wider">البيان (اختياري)</label>
-                                <input id="op-note" type="text"
-                                       placeholder="مثال: بضاعة، دفعة نقدية، فاتورة...">
-                            </div>
-                            <div class="md:col-span-3">
-                                <button onclick="saveOp()"
-                                        class="gold-btn w-full py-3 rounded-xl flex items-center
-                                               justify-center gap-2 font-bold text-sm">
-                                    <span>تثبيت</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4"
-                                         viewBox="0 0 20 20" fill="currentColor">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div id="tafqit-text" class="tafqit-box text-xs hidden"></div>
-                        <p class="text-[10px] text-gray-600">
-                            💡 تأكد من المبلغ والنوع قبل الحفظ — لا يمكن التراجع
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ====================== نافذة الإعدادات ====================== -->
-<div id="settings-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4"
-     style="display:none;">
-    <div class="glass-card modal-content w-full max-w-md p-7 space-y-6 relative">
-        <button onclick="closeModal('settings-modal')"
-                class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center
-                       rounded-full bg-white/5 hover:bg-white/15 transition text-gray-400 hover:text-white text-xl">✕</button>
-        <div class="text-center">
-            <span class="text-5xl mb-2 block">🛡️</span>
-            <h3 class="text-xl font-bold gold-text">الإعدادات</h3>
-        </div>
-        <div class="space-y-4">
-            <p class="text-xs text-gray-500 uppercase tracking-wider font-bold border-b border-white/8 pb-2">
-                تغيير كلمة المرور
-            </p>
-            <div class="relative">
-                <label class="block text-xs text-gray-400 mb-1">كلمة المرور الجديدة</label>
-                <input id="new-pass" type="password" placeholder="••••••••">
-                <button onclick="togglePass('new-pass')"
-                        class="absolute left-4 bottom-3.5 opacity-40 hover:opacity-100 transition">👁️</button>
-            </div>
-            <div class="relative">
-                <label class="block text-xs text-gray-400 mb-1">تأكيد كلمة المرور</label>
-                <input id="confirm-pass" type="password" placeholder="••••••••">
-                <button onclick="togglePass('confirm-pass')"
-                        class="absolute left-4 bottom-3.5 opacity-40 hover:opacity-100 transition">👁️</button>
-            </div>
-        </div>
-        <div class="flex gap-3">
-            <button onclick="updatePassword()"
-                    class="gold-btn flex-grow py-3 rounded-xl font-bold">تحديث</button>
-            <button onclick="closeModal('settings-modal')"
-                    class="bg-zinc-800 px-5 py-3 rounded-xl hover:bg-zinc-700 transition text-sm">إلغاء</button>
-        </div>
-    </div>
-</div>
-
-<!-- ====================== نافذة الدليل ====================== -->
-<div id="guide-modal" class="fixed inset-0 modal-backdrop flex items-center justify-center z-50 p-4"
-     style="display:none;">
-    <div class="glass-card modal-content w-full max-w-2xl p-7 relative"
-         style="max-height: 90vh; overflow-y: auto;">
-        <button onclick="closeModal('guide-modal')"
-                class="absolute top-4 left-4 w-8 h-8 flex items-center justify-center
-                       rounded-full bg-white/5 hover:bg-white/15 transition text-gray-400 hover:text-white text-xl">✕</button>
-
-        <div class="text-center mb-6">
-            <span class="text-5xl block mb-2">📖</span>
-            <h3 class="text-2xl font-bold gold-text">دليل استخدام HEIBA</h3>
-            <p class="text-xs text-gray-500 mt-1">كل ما تحتاج معرفته للبدء</p>
-        </div>
-
-        <!-- تبويبات الدليل -->
-        <div class="flex gap-2 mb-5">
-            <button onclick="switchGuideTab('merchant')" id="guide-tab-merchant"
-                    class="flex-1 py-2 rounded-xl text-xs font-bold border border-yellow-600/50 bg-yellow-900/20 text-yellow-400 transition">
-                🏪 للتاجر
-            </button>
-            <button onclick="switchGuideTab('debtor')" id="guide-tab-debtor"
-                    class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/10 bg-black/30 text-gray-400 transition">
-                👤 للمواطن
-            </button>
-            <button onclick="switchGuideTab('general')" id="guide-tab-general"
-                    class="flex-1 py-2 rounded-xl text-xs font-bold border border-white/10 bg-black/30 text-gray-400 transition">
-                ℹ️ عام
-            </button>
-        </div>
-
-        <!-- محتوى التاجر -->
-        <div id="guide-content-merchant">
-            <div class="guide-step">
-                <div class="guide-num">1</div>
-                <div>
-                    <p class="font-bold text-sm text-white">إنشاء حساب تاجر</p>
-                    <p class="text-xs text-gray-400 mt-1">اختر "تاجر" من بوابة الدخول، أدخل اسمك وكلمة مرور قوية، ثم اضغط "إنشاء حساب جديد".</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">2</div>
-                <div>
-                    <p class="font-bold text-sm text-white">إضافة حساب مواطن</p>
-                    <p class="text-xs text-gray-400 mt-1">في خانة البحث بالقائمة الجانبية، اكتب اسم المواطن كما سجّل في المنصة واضغط + أو Enter.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">3</div>
-                <div>
-                    <p class="font-bold text-sm text-white">تسجيل دين (عليه)</p>
-                    <p class="text-xs text-gray-400 mt-1">اختر الحساب، أدخل المبلغ، اختر العملة، اختر "عليه (دين)"، أضف بياناً إن أردت، ثم "تثبيت".</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">4</div>
-                <div>
-                    <p class="font-bold text-sm text-white">تسجيل سداد (له)</p>
-                    <p class="text-xs text-gray-400 mt-1">نفس الخطوات لكن اختر "له (سداد)" — سيُطرح من الرصيد تلقائياً.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">5</div>
-                <div>
-                    <p class="font-bold text-sm text-white"</p>
-                    <p class="text-xs text-gray-400 mt-1">.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- محتوى المواطن -->
-        <div id="guide-content-debtor" class="hidden">
-            <div class="guide-step">
-                <div class="guide-num">1</div>
-                <div>
-                    <p class="font-bold text-sm text-white">إنشاء حساب مواطن</p>
-                    <p class="text-xs text-gray-400 mt-1">اختر "مواطن" من بوابة الدخول وأدخل اسمك الكامل كما يعرفك به التاجر تماماً (الاسم مهم جداً للمطابقة).</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">2</div>
-                <div>
-                    <p class="font-bold text-sm text-white">مشاهدة ديونك</p>
-                    <p class="text-xs text-gray-400 mt-1">ستظهر جميع التجار الذين سجّلوا لك حسابات تلقائياً. لا حاجة لإضافة أي شيء — فقط ادخل وانتظر.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">3</div>
-                <div>
-                    <p class="font-bold text-sm text-white">فهم الألوان</p>
-                    <p class="text-xs text-gray-400 mt-1">
-                        🔴 <strong>الأحمر</strong> = مبلغ عليك (دين)<br>
-                        🟢 <strong>الأخضر</strong> = مبلغ لك أو تم سداده
-                    </p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">4</div>
-                <div>
-                    <p class="font-bold text-sm text-white">التحديث التلقائي</p>
-                    <p class="text-xs text-gray-400 mt-1">الأرقام تتحدث كل 4 ثوانٍ تلقائياً. إذا سجّل التاجر عملية جديدة ستراها فوراً.</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- محتوى عام -->
-        <div id="guide-content-general" class="hidden">
-            <div class="guide-step">
-                <div class="guide-num">💡</div>
-                <div>
-                    <p class="font-bold text-sm text-white">وضع عدم الاتصال</p>
-                    <p class="text-xs text-gray-400 mt-1">المنصة تعمل حتى بدون اتصال بالسيرفر — ستُحفظ العمليات محلياً وتُزامن عند عودة الاتصال.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">🖨️</div>
-                <div>
-                    <p class="font-bold text-sm text-white">طباعة الكشف</p>
-                    <p class="text-xs text-gray-400 mt-1">اضغط زر 🖨️ في الهيدر لطباعة كشف حساب منظّم أو حفظه كـ PDF.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">🔒</div>
-                <div>
-                    <p class="font-bold text-sm text-white">الأمان</p>
-                    <p class="text-xs text-gray-400 mt-1">استخدم كلمة مرور قوية. يمكنك تغييرها في أي وقت من إعدادات ⚙️. لا تشارك كلمة المرور مع أحد.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">📊</div>
-                <div>
-                    <p class="font-bold text-sm text-white">الرصيد الصافي</p>
-                    <p class="text-xs text-gray-400 mt-1">بطاقات الرصيد في الأعلى تُجمع كل العمليات مع جميع الحسابات لإعطائك صورة شاملة.</p>
-                </div>
-            </div>
-            <div class="guide-step">
-                <div class="guide-num">⌨️</div>
-                <div>
-                    <p class="font-bold text-sm text-white">اختصارات لوحة المفاتيح</p>
-                    <p class="text-xs text-gray-400 mt-1">
-                        <kbd class="bg-white/10 px-1.5 py-0.5 rounded text-[10px]">Enter</kbd> في خانة البحث = إضافة حساب<br>
-                        <kbd class="bg-white/10 px-1.5 py-0.5 rounded text-[10px]">Escape</kbd> = إغلاق المودالات
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <button onclick="closeModal('guide-modal')"
-                class="gold-btn w-full py-3 rounded-xl font-bold mt-5">
-            فهمت، ابدأ الاستخدام ✓
-        </button>
-    </div>
-</div>
-
-<!-- ======================== Navigation Bar (جوال) ======================== -->
-<nav id="bottom-nav" class="justify-around">
-    <button class="nav-tab active" id="nav-accounts" onclick="mobileNav('accounts')">
-        <span>📋</span>
-        <span>الحسابات</span>
-    </button>
-    <button class="nav-tab" id="nav-details" onclick="mobileNav('details')">
-        <span>📊</span>
-        <span>التفاصيل</span>
-    </button>
-    <button class="nav-tab" id="nav-guide" onclick="openModal('guide-modal')">
-        <span>📖</span>
-        <span>الدليل</span>
-    </button>
-    <button class="nav-tab" id="nav-settings" onclick="openModal('settings-modal')">
-        <span>⚙️</span>
-        <span>الإعدادات</span>
-    </button>
-</nav>
-
-<!-- ======================== JAVASCRIPT ======================== -->
-<script>
-// ═══════════════════════════════════════════════
-//   HEIBA PLATFORM — CORE LOGIC v2.0
-//   ملاحظة للمطوّر: يمكنك تغيير API_BASE لربط
-//   المنصة بأي سيرفر تريده
-// ═══════════════════════════════════════════════
-
-// ── إعدادات الاتصال بالسيرفر ──
-const CONFIG = {
-    API_BASE: '',          // مثال: 'https://yourdomain.com' أو '' للمسار النسبي
-    SYNC_INTERVAL: 4000,   // مدة المزامنة بالميلي ثانية
-    OFFLINE_MODE: false,   // يُفعَّل تلقائياً عند انقطاع الاتصال
-};
-
-// ── المتغيرات العامة ──
-let user         = null;
-let activeTarget = null;
-let userType     = 'merchant';
-let discoveredData = [];
-let userStatuses   = {};
-let opsFilter      = 'all';
-let lastSyncTime   = null;
-let isOnline       = true;
-
-// ── دالة بناء URL ──
-function apiUrl(path) {
-    return CONFIG.API_BASE + path;
-}
-
-// ═══ شاشة التحميل ═══
-window.addEventListener('load', () => {
-    setTimeout(() => {
-        const splash = document.getElementById('splash-screen');
-        const saved  = localStorage.getItem('heiba_auth_session');
-        document.getElementById('splash-msg').innerText =
-            saved ? 'جارٍ استعادة جلستك...' : 'مرحباً بك في HEIBA';
-        setTimeout(() => {
-            splash.classList.add('hide');
-            if (saved) {
-                user = JSON.parse(saved);
-                start();
-            } else {
-                document.getElementById('auth-ui').classList.remove('hidden');
-            }
-        }, 1900);
-    }, 100);
-});
-
-// ═══ مؤشر الاتصال ═══
-function setConnectionStatus(status) {
-    const dot  = document.getElementById('conn-dot');
-    const text = document.getElementById('conn-text');
-    dot.className  = `conn-dot ${status}`;
-    text.innerText = status === 'online' ? 'متصل' : status === 'syncing' ? 'مزامنة...' : 'غير متصل';
-    isOnline = (status !== 'offline');
-}
-
-// ═══ Toast ═══
-function showToast(message, type = 'error') {
-    const container = document.getElementById('toast-container');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icons = { success: '✅', error: '⚠️', info: 'ℹ️' };
-    toast.innerHTML = `<span>${icons[type] || '💬'}</span><span>${message}</span>`;
-    container.appendChild(toast);
-    requestAnimationFrame(() => {
-        requestAnimationFrame(() => toast.classList.add('show'));
-    });
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 400);
-    }, 3500);
-}
-
-// ═══ مساعدات UI ═══
-function togglePass(id) {
-    const inp = document.getElementById(id);
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-}
-function updateOpType(val) {
-    document.getElementById('op-type').value = val;
-}
-function openModal(id) {
-    document.getElementById(id).style.display = 'flex';
-}
-function closeModal(id) {
-    document.getElementById(id).style.display = 'none';
-    if (id === 'settings-modal') {
-        document.getElementById('new-pass').value = '';
-        document.getElementById('confirm-pass').value = '';
-    }
-}
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        ['settings-modal','guide-modal'].forEach(id => {
-            if (document.getElementById(id).style.display === 'flex') closeModal(id);
-        });
-    }
-});
-
-// ═══ نوع الحساب ═══
-function setType(t) {
-    userType = t;
-    document.getElementById('sel-merchant').classList.toggle('active', t === 'merchant');
-    document.getElementById('sel-debtor').classList.toggle('active', t === 'debtor');
-}
-
-// ═══ تبويبات الدليل ═══
-function switchGuideTab(tab) {
-    ['merchant','debtor','general'].forEach(t => {
-        const btn     = document.getElementById(`guide-tab-${t}`);
-        const content = document.getElementById(`guide-content-${t}`);
-        const active  = t === tab;
-        content.classList.toggle('hidden', !active);
-        btn.className = `flex-1 py-2 rounded-xl text-xs font-bold border transition ${
-            active
-            ? 'border-yellow-600/50 bg-yellow-900/20 text-yellow-400'
-            : 'border-white/10 bg-black/30 text-gray-400'
-        }`;
-    });
-}
-
-// ═══ تبويب الجوال ═══
-function mobileNav(tab) {
-    const sidebar = document.getElementById('sidebar-col');
-    const detail  = document.getElementById('detail-col');
-    ['accounts','details'].forEach(t => {
-        document.getElementById(`nav-${t}`).classList.toggle('active', t === tab);
-    });
-    if (tab === 'accounts') {
-        sidebar.style.display = 'block';
-        detail.style.display  = 'none';
-    } else {
-        sidebar.style.display = 'none';
-        detail.style.display  = 'block';
-    }
-}
-
-// ═══ التفقيط ═══
-function formatAr(num) {
-    if (num == 0) return "صفر";
-    const units    = ["","واحد","اثنان","ثلاثة","أربعة","خمسة","ستة","سبعة","ثمانية","تسعة","عشرة","أحد عشر","اثنا عشر","ثلاثة عشر","أربعة عشر","خمسة عشر","ستة عشر","سبعة عشر","ثمانية عشر","تسعة عشر"];
-    const tens     = ["","","عشرون","ثلاثون","أربعون","خمسون","ستون","سبعون","ثمانون","تسعون"];
-    const hundreds = ["","مائة","مائتان","ثلاثمائة","أربعمائة","خمسمائة","ستمائة","سبعمائة","ثمانمائة","تسعمائة"];
-    function conv(n) {
-        let r = ""; const h = Math.floor(n/100); const t = n%100;
-        if (h > 0) r += hundreds[h];
-        if (t > 0) {
-            if (r !== "") r += " و ";
-            if (t < 20) r += units[t];
-            else { const s=t%10; const ten=Math.floor(t/10); if(s>0) r += units[s]+" و "; r += tens[ten]; }
+        function randomTarget() {
+            let newIp = ipPool[Math.floor(Math.random() * ipPool.length)];
+            let newLoc = locations[Math.floor(Math.random() * locations.length)];
+            let newOs = osList[Math.floor(Math.random() * osList.length)];
+            targetIpSpan.innerText = newIp;
+            // تحديث المعلومات في لوحة اليمين ديناميكيًا
+            let locDiv = document.querySelector('.info-card:first-child div:nth-child(3)');
+            let osDiv = document.querySelector('.info-card:first-child div:nth-child(4)');
+            if(locDiv) locDiv.innerHTML = `🌍 LOCATION: ${newLoc}`;
+            if(osDiv) osDiv.innerHTML = `🖥️ OS: ${newOs}`;
+            addLog(`🎯 تم تحديث الهدف إلى ${newIp} (${newLoc})`);
         }
-        return r;
-    }
-    let res = "";
-    const m = Math.floor(num/1000000); const th = Math.floor((num%1000000)/1000); const rem = num%1000;
-    if (m  > 0) { res += (m===1?"مليون":m===2?"مليونان":conv(m)+" ملايين"); }
-    if (th > 0) { if(res!=="") res+=" و "; res += (th===1?"ألف":th===2?"ألفين":conv(th)+" آلاف"); }
-    if (rem > 0) { if(res!=="") res+=" و "; res += conv(rem); }
-    return res;
-}
-function applyTafqit() {
-    const val  = parseFloat(document.getElementById('op-amt').value);
-    const sel  = document.getElementById('op-cur');
-    const cur  = sel.options[sel.selectedIndex].text.replace(/^[🇾🇪🇺🇸🇸🇦]\s*/u, '');
-    const box  = document.getElementById('tafqit-text');
-    if (val > 0) {
-        box.innerText = `فقط ${formatAr(Math.floor(val))} ${cur} لا غير.`;
-        box.classList.remove('hidden');
-    } else {
-        box.classList.add('hidden');
-    }
-}
 
-// ═══ تسجيل الدخول / الإنشاء ═══
-async function doAuth(action) {
-    const name     = document.getElementById('u-name').value.trim();
-    const password = document.getElementById('u-pass').value;
-    if (!name || !password) { showToast("الرجاء إدخال الاسم وكلمة المرور", "error"); return; }
-    setConnectionStatus('syncing');
-    try {
-        const res  = await fetch(apiUrl('/api/auth'), {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ name, password, type: userType, action })
-        });
-        const data = await res.json();
-        if (res.ok) {
-            user = data;
-            setConnectionStatus('online');
-            if (document.getElementById('remember-me').checked)
-                localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-            showToast("تم الدخول بنجاح 🎉", "success");
-            start();
-        } else {
-            setConnectionStatus('online');
-            showToast(data.error || "حدث خطأ، حاول مرة أخرى", "error");
+        // إضافة سجل للطرفية
+        function addLog(msg, isError = false) {
+            const div = document.createElement('div');
+            div.className = 'log-line';
+            const now = new Date();
+            const timeStr = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
+            div.innerHTML = `<span class="log-time" style="color:${isError ? '#f66' : '#0ff'}">${timeStr}</span> ${msg}`;
+            terminalLogs.appendChild(div);
+            div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-    } catch(e) {
-        setConnectionStatus('offline');
-        CONFIG.OFFLINE_MODE = true;
-        user = {
-            id: Date.now(), name, type: userType,
-            myRecords: [], verified: false
-        };
-        if (document.getElementById('remember-me').checked)
-            localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-        showToast("تم الدخول (وضع بدون اتصال)", "info");
-        start();
-    }
-}
 
-// ═══ جلب حالات التوثيق ═══
-async function fetchStatuses(names) {
-    if (!names || !names.length) return;
-    try {
-        const res  = await fetch(apiUrl('/api/check-status'), {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ names, requesterId: user.id })
-        });
-        const data = await res.json();
-        if (data.requesterStatus && data.requesterStatus.verified !== user.verified) {
-            user.verified = data.requesterStatus.verified;
-            updateHeaderDisplay();
+        // محاكاة شريط تقدم (للتأثير البصري)
+        function simulateProgress(sec, callback) {
+            let width = 0;
+            const interval = setInterval(() => {
+                width += Math.random() * 15 + 5;
+                if (width >= 100) {
+                    width = 100;
+                    clearInterval(interval);
+                    if(callback) callback();
+                }
+                if(expProgressSpan) expProgressSpan.style.width = width + '%';
+            }, sec * 20);
         }
-        userStatuses = {...userStatuses, ...data.statuses};
-        if (user.type === 'merchant') {
-            renderList();
-            if (activeTarget) updateTargetHeader(activeTarget);
-        }
-        lastSyncTime = new Date();
-        updateLastSyncText();
-        setConnectionStatus('online');
-    } catch(e) {
-        setConnectionStatus('offline');
-    }
-}
 
-// ═══ تحديث عرض الهيدر ═══
-function buildVerifiedBadge() {
-    return `<span class="verified-badge">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
-            <path d="M12 2L14.5 4.5L18 3.5L19 7L22.5 8.5L21.5 12L24 14.5L20.5 15.5L19.5 19L16 18L13.5 20.5L12 17L8.5 20.5L6 18L2.5 19L1.5 15.5L0 14.5L2.5 12L1.5 8.5L5 7L6 3.5L9.5 4.5L12 2Z" fill="white"/>
-            <path d="M9 12L11 14L15 10" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-        موثق
-    </span>`;
-}
-function updateHeaderDisplay() {
-    const nameHtml   = user.verified ? `<span class="verified-name-glow">${user.name}</span>` : user.name;
-    const badge      = user.verified ? buildVerifiedBadge() : '';
-    document.getElementById('display-name').innerHTML = `${nameHtml} ${badge}`;
-}
-function updateLastSyncText() {
-    if (!lastSyncTime) return;
-    const el = document.getElementById('last-sync-text');
-    if (el) el.innerText = `آخر تحديث: ${lastSyncTime.toLocaleTimeString('ar')}`;
-}
-
-// ═══ بدء العمل بعد الدخول ═══
-function start() {
-    document.getElementById('auth-ui').classList.add('hidden');
-    document.getElementById('main-ui').classList.remove('hidden');
-    document.getElementById('bottom-nav').style.display =
-        window.innerWidth <= 768 ? 'flex' : 'none';
-
-    updateHeaderDisplay();
-    document.getElementById('role-tag').innerText =
-        user.type === 'merchant' ? '🏪 تاجر' : '👤 مواطن';
-
-    // مزامنة دورية
-    setInterval(() => {
-        if (user.type === 'merchant') {
-            const targets = [...new Set(user.myRecords.map(r => r.targetName))];
-            if (activeTarget && !targets.includes(activeTarget)) targets.push(activeTarget);
-            fetchStatuses(targets);
-        } else {
-            fetchStatuses([user.name]);
-        }
-    }, CONFIG.SYNC_INTERVAL);
-
-    if (user.type === 'merchant') {
-        document.getElementById('merchant-tools').classList.remove('hidden');
-        document.getElementById('add-form').classList.remove('hidden');
-        renderList();
-        calculateGrand(user.myRecords);
-    } else {
-        fetchAutoDebts();
-        setInterval(fetchAutoDebts, CONFIG.SYNC_INTERVAL);
-    }
-
-    // إظهار الدليل للمستخدمين الجدد
-    if (!localStorage.getItem('heiba_guide_seen')) {
-        setTimeout(() => openModal('guide-modal'), 800);
-        localStorage.setItem('heiba_guide_seen', '1');
-    }
-}
-
-// ═══ حساب الرصيد الإجمالي ═══
-function calculateGrand(recs) {
-    let y=0, u=0, s=0;
-    recs.forEach(r => {
-        const a = parseFloat(r.amount);
-        const d = r.type === 'دين';
-        if      (r.currency === 'YER') y += d ? a : -a;
-        else if (r.currency === 'USD') u += d ? a : -a;
-        else                           s += d ? a : -a;
-    });
-    const fmt = (val, elId, baseColor) => {
-        const el = document.getElementById(elId);
-        el.innerHTML = val === 0
-            ? `<span class="text-gray-600">0</span>`
-            : `<span class="${val > 0 ? 'text-red-400' : 'text-green-400'}" dir="ltr">
-                   ${val > 0 ? '−' : '+'} ${Math.abs(val).toLocaleString()}
-               </span>`;
-    };
-    fmt(y, 'gt-yer', 'blue');
-    fmt(u, 'gt-usd', 'green');
-    fmt(s, 'gt-sar', 'orange');
-}
-
-// ═══ إضافة حساب للتاجر ═══
-function addTarget() {
-    const n = document.getElementById('target-search').value.trim();
-    if (!n) return;
-    activeTarget = n;
-    fetchStatuses([n]);
-    showDetails(n);
-    renderList();
-    document.getElementById('target-search').value = "";
-}
-
-// ═══ فلترة القائمة ═══
-function filterList() {
-    const q = document.getElementById('target-search').value.trim().toLowerCase();
-    document.querySelectorAll('#main-list .list-item').forEach(el => {
-        const name = el.dataset.name?.toLowerCase() || '';
-        el.style.display = name.includes(q) ? '' : 'none';
-    });
-}
-
-// ═══ رسم القائمة (تاجر) ═══
-function renderList() {
-    let targets = [...new Set(user.myRecords.map(r => r.targetName))];
-    if (activeTarget && !targets.includes(activeTarget)) targets.push(activeTarget);
-
-    const listDiv = document.getElementById('main-list');
-    if (targets.length === 0) {
-        listDiv.innerHTML = `
-            <div class="text-center text-gray-600 py-10">
-                <span class="text-4xl block mb-2 opacity-30">📭</span>
-                <p class="text-sm">لا توجد حسابات مسجلة بعد</p>
-                <p class="text-xs mt-1 opacity-60">أضف اسم المواطن من الخانة أعلاه</p>
-            </div>`;
-        document.getElementById('list-count').innerText = '';
-        return;
-    }
-    document.getElementById('list-count').innerText = `${targets.length} حساب`;
-
-    listDiv.innerHTML = targets.map(n => {
-        const st      = userStatuses[n] || {};
-        const nHtml   = st.verified ? `<span class="verified-name-glow">${n}</span>` : n;
-        const vBadge  = st.verified ? buildVerifiedBadge() : '';
-        const regBadge = st.registered === false
-            ? `<span class="text-[9px] bg-red-900/30 text-red-400 px-2 py-0.5 rounded-full">غير مسجل</span>`
-            : st.registered
-            ? `<span class="text-[9px] bg-green-900/30 text-green-400 px-2 py-0.5 rounded-full">مسجل ✓</span>`
-            : '';
-        return `
-            <div onclick="showDetails('${n}')" data-name="${n}"
-                 class="list-item ${activeTarget === n ? 'selected' : ''}">
-                <div class="list-avatar">👤</div>
-                <div class="flex-grow min-w-0">
-                    <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="font-bold text-sm truncate">${nHtml}</span>
-                        ${vBadge}
-                    </div>
-                    <div class="mt-1">${regBadge}</div>
-                </div>
-                <div class="text-gold-primary opacity-40 text-lg">›</div>
-            </div>`;
-    }).join('');
-}
-
-// ═══ تحديث رأس الحساب ═══
-function updateTargetHeader(name) {
-    const st   = userStatuses[name] || {};
-    const nHtml = st.verified ? `<span class="verified-name-glow">${name}</span>` : name;
-    const badge = st.verified ? buildVerifiedBadge() : '';
-    document.getElementById('active-target-name').innerHTML = `${nHtml} ${badge}`;
-    document.getElementById('active-target-reg').innerText =
-        st.registered === false ? '⚠️ هذا المواطن غير مسجل في المنصة بعد' :
-        st.registered           ? '✅ مواطن مسجل في المنصة' : '';
-}
-
-// ═══ جلب ديون المواطن ═══
-async function fetchAutoDebts() {
-    setConnectionStatus('syncing');
-    try {
-        const res = await fetch(apiUrl(`/api/auto-discover?debtorName=${encodeURIComponent(user.name)}`));
-        discoveredData = await res.json();
-        setConnectionStatus('online');
-        lastSyncTime = new Date();
-        updateLastSyncText();
-    } catch(e) {
-        setConnectionStatus('offline');
-        if (!discoveredData.length) discoveredData = [];
-    }
-
-    let all = [];
-    discoveredData.forEach(m => all = all.concat(m.records));
-    calculateGrand(all);
-
-    const listDiv = document.getElementById('main-list');
-    if (discoveredData.length === 0) {
-        listDiv.innerHTML = `
-            <div class="text-center text-gray-600 py-10">
-                <span class="text-4xl block mb-2 opacity-30">🎉</span>
-                <p class="text-sm">لا توجد مطالبات مسجلة</p>
-                <p class="text-xs mt-1 opacity-60">ستظهر هنا عند تسجيل تاجر لك</p>
-            </div>`;
-        document.getElementById('list-count').innerText = '';
-    } else {
-        document.getElementById('list-count').innerText = `${discoveredData.length} تاجر`;
-        listDiv.innerHTML = discoveredData.map(m => {
-            const nHtml = m.merchantVerified ? `<span class="verified-name-glow">${m.merchantName}</span>` : m.merchantName;
-            const badge = m.merchantVerified ? buildVerifiedBadge() : '';
-            let my=0,mu=0,ms=0;
-            m.records.forEach(r => {
-                const a=parseFloat(r.amount), d=r.type==='دين';
-                if(r.currency==='YER') my+=d?a:-a;
-                else if(r.currency==='USD') mu+=d?a:-a;
-                else ms+=d?a:-a;
+        // --- الأدوات (كلها وهمية ولكن بمخرجات متقنة) ---
+        function fullRecon() {
+            addLog("🔍 بدأ المسح الشامل باستخدام Nmap & Masscan...");
+            simulateProgress(2.5, () => {
+                let openPorts = [22, 80, 443, 3306, 8080, 5000, 27017].filter(() => Math.random() > 0.5);
+                addLog(`✅ تم اكتشاف ${openPorts.length} منفذ مفتوح: ${openPorts.join(', ')}`);
+                addLog(`📡 خدمات: SSH, HTTP, HTTPS, MySQL, MongoDB (محاكاة)`);
+                addLog("📄 يتم جمع لافتات الخدمات... Banner: Apache/2.4.41, OpenSSH 8.9p1");
+                addLog("🎯 الثغرات المحتملة: CVE-2024-2875, CVE-2023-44487");
             });
-            const netText = my !== 0 ? `<span class="${my>0?'text-red-400':'text-green-400'} text-xs font-bold">${Math.abs(my).toLocaleString()} ر.ي</span>` : '';
-            return `
-                <div onclick="showDetails('${m.merchantName}')" data-name="${m.merchantName}"
-                     class="list-item ${activeTarget === m.merchantName ? 'selected' : ''}">
-                    <div class="list-avatar">🏪</div>
-                    <div class="flex-grow min-w-0">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="font-bold text-sm truncate">${nHtml}</span>
-                            ${badge}
-                        </div>
-                        <div class="mt-1">${netText}</div>
-                    </div>
-                    <div class="text-gold-primary opacity-40 text-lg">›</div>
-                </div>`;
-        }).join('');
-    }
-    if (activeTarget) showDetails(activeTarget);
-}
+        }
 
-// ═══ فلتر العمليات ═══
-function setOpsFilter(f) {
-    opsFilter = f;
-    ['all','debt','credit'].forEach(id => {
-        const btn = document.getElementById(`f-${id}`);
-        if (!btn) return;
-        const isActive = (id === f) || (id === 'all' && f === 'all') ||
-                         (id === 'debt' && f === 'دين') || (id === 'credit' && f === 'سداد');
-        btn.className = `filter-btn text-xs px-3 py-1.5 rounded-xl border font-bold transition ${
-            isActive
-            ? 'border-yellow-600/50 bg-yellow-900/20 text-yellow-400'
-            : 'border-white/10 bg-black/30 text-gray-400 hover:border-white/20'
-        }`;
-    });
-    if (activeTarget) showDetails(activeTarget);
-}
+        function zeroDayExp() {
+            addLog("💀 تشغيل ثغرة Zero-Day (استغلال يوم الصفر) على الهدف...");
+            simulateProgress(3, () => {
+                addLog("⚠️ تجاوز ASLR و DEP بنجاح (محاكاة)");
+                addLog("🔥 حقن شيل كود عكسي إلى المنفذ 4444");
+                addLog("🕳️ تم فتح جلسة shell تفاعلية (وهمية)");
+                backdoorStatSpan.innerText = "ACTIVE 🔓";
+                backdoorStatSpan.style.color = "#0ff";
+                addLog("🔓 [SIM] BACKDOOR ACTIVE - يمكن إصدار أوامر (وهمية)");
+            });
+        }
 
-// ═══ عرض تفاصيل حساب ═══
-function showDetails(name) {
-    activeTarget = name;
-    document.getElementById('empty-hint').classList.add('hidden');
-    document.getElementById('details-pane').classList.remove('hidden');
-    updateTargetHeader(name);
+        function netFlood() {
+            addLog("🌊 بدء هجوم تدفق حزم SYN + UDP Flood...");
+            let packets = 0;
+            let interval = setInterval(() => {
+                packets += Math.floor(Math.random() * 3000);
+                packetRateSpan.innerText = `PKT/s: ${packets}`;
+                bandwidthSpan.innerText = `BW: ${(packets * 0.012).toFixed(1)} Mbps`;
+                if(packets > 40000) clearInterval(interval);
+            }, 200);
+            simulateProgress(4, () => {
+                clearInterval(interval);
+                addLog(`✅ تم إرسال ما مجموعه ${packets.toLocaleString()} حزمة.`);
+                addLog("🛡️ جدار الحماية بدأ بتصفية الحزم، الهجوم محاكاة فقط.");
+                packetRateSpan.innerText = "PKT/s: 0";
+                bandwidthSpan.innerText = "BW: 0 Mbps";
+            });
+        }
 
-    let records = user.type === 'merchant'
-        ? user.myRecords.filter(r => r.targetName === name)
-        : (discoveredData.find(m => m.merchantName === name)?.records || []);
+        function backdoorGen() {
+            addLog("🔧 إنشاء باب خلفي متقدم...");
+            simulateProgress(2, () => {
+                addLog("📀 حقن المهام المجدولة (cron) لاستمرارية الاختراق.");
+                addLog("🔑 تم إنشاء مستخدم مخفي: fadi$ مع صلاحيات sudo.");
+                backdoorStatSpan.innerText = "PERSISTENT";
+                addLog("⚙️ باب خلفي يعمل على المنفذ 2222 (SSH tunnel)");
+            });
+        }
 
-    // تطبيق الفلتر
-    let filtered = opsFilter === 'all' ? records : records.filter(r => r.type === opsFilter);
+        function wipeLogs() {
+            addLog("🧹 محو السجلات من النظام المستهدف...");
+            simulateProgress(1.8, () => {
+                addLog("🗑️ /var/log/auth.log تم مسحه.");
+                addLog("🗑️ سجلات الوصول و bash_history تم إتلافها.");
+                addLog("✅ لا توجد آثار متبقية (محاكاة).");
+            });
+        }
 
-    let y=0, u=0, s=0;
-    records.forEach(r => {
-        const a=parseFloat(r.amount), d=r.type==='دين';
-        if(r.currency==='YER') y+=d?a:-a;
-        else if(r.currency==='USD') u+=d?a:-a;
-        else s+=d?a:-a;
-    });
+        // الرسوم البيانية المتحركة (تظهر وكأنها بيانات حية)
+        const trafficCanvas = document.getElementById('trafficChart');
+        const cpuCanvas = document.getElementById('cpuChart');
+        let trafficCtx = trafficCanvas.getContext('2d');
+        let cpuCtx = cpuCanvas.getContext('2d');
 
-    document.getElementById('ops-count').innerText =
-        filtered.length !== records.length
-        ? `${filtered.length} من ${records.length} عملية`
-        : `${records.length} عملية`;
+        let trafficData = Array(40).fill(20);
+        let cpuData = Array(40).fill(15);
 
-    const opsDiv = document.getElementById('ops-list');
-    if (filtered.length === 0) {
-        opsDiv.innerHTML = `
-            <div class="p-8 text-center text-gray-600 border border-dashed border-white/8 rounded-xl">
-                <span class="text-3xl block mb-2 opacity-40">📭</span>
-                <p class="text-sm">${opsFilter === 'all' ? 'لا توجد عمليات مسجلة بعد' : 'لا توجد عمليات من هذا النوع'}</p>
-            </div>`;
-    } else {
-        opsDiv.innerHTML = [...filtered].reverse().map(r => {
-            const a  = parseFloat(r.amount);
-            const d  = r.type === 'دين';
-            const dt = new Date(r.date);
-            const dateStr = dt.toLocaleDateString('ar-YE', { year:'numeric', month:'short', day:'numeric' });
-            const timeStr = dt.toLocaleTimeString('ar', { hour:'2-digit', minute:'2-digit' });
-            return `
-                <div class="op-row ${d ? 'debt' : 'credit'}">
-                    <div class="flex-grow min-w-0">
-                        <p class="font-bold text-sm text-gray-100 truncate">
-                            ${r.note || (d ? 'تسجيل دين' : 'تسجيل سداد')}
-                        </p>
-                        <p class="text-[10px] text-gray-500 mt-0.5">${dateStr} — ${timeStr}</p>
-                    </div>
-                    <div class="text-left mr-3 flex-shrink-0" dir="ltr">
-                        <p class="text-lg font-black ${d ? 'text-red-400' : 'text-green-400'}">
-                            ${d ? '+' : '−'} ${a.toLocaleString()}
-                        </p>
-                        <p class="text-[9px] opacity-50 uppercase text-left">${r.currency}</p>
-                    </div>
-                </div>`;
-        }).join('');
-    }
+        function drawChart(ctx, data, color) {
+            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            let w = ctx.canvas.width, h = ctx.canvas.height;
+            let step = w / (data.length - 1);
+            for(let i=0; i<data.length; i++) {
+                let x = i * step;
+                let y = h - (data[i] / 100) * h;
+                if(i===0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
 
-    // تحديث أرقام الرصيد
-    const setBalance = (id, val) => {
-        const el = document.getElementById(id);
-        el.innerText = Math.abs(val).toLocaleString();
-        el.className = `text-base font-bold leading-none ${val > 0 ? 'text-red-400' : val < 0 ? 'text-green-400' : 'text-gray-500'}`;
-    };
-    setBalance('dt-yer', y);
-    setBalance('dt-usd', u);
-    setBalance('dt-sar', s);
+        function animateGraphs() {
+            trafficData.push(Math.random() * 70 + 10);
+            if(trafficData.length > 40) trafficData.shift();
+            cpuData.push(Math.random() * 60 + 5);
+            if(cpuData.length > 40) cpuData.shift();
+            drawChart(trafficCtx, trafficData, '#0ff');
+            drawChart(cpuCtx, cpuData, '#f0f');
+            requestAnimationFrame(animateGraphs);
+        }
+        animateGraphs();
 
-    if (user.type === 'merchant') renderList();
+        // تحديث بيانات الحزمة بشكل عشوائي حتى بدون هجوم
+        setInterval(() => {
+            if(Math.random() > 0.7) {
+                let fakePkt = Math.floor(Math.random() * 500);
+                packetRateSpan.innerText = `PKT/s: ${fakePkt}`;
+                bandwidthSpan.innerText = `BW: ${(fakePkt * 0.014).toFixed(1)} Mbps`;
+            }
+        }, 1500);
 
-    // جوال: انتقل لتبويب التفاصيل تلقائياً
-    if (window.innerWidth <= 768) mobileNav('details');
-}
+        // ربط الأزرار
+        document.getElementById('fullRecon').addEventListener('click', fullRecon);
+        document.getElementById('zeroDayExp').addEventListener('click', zeroDayExp);
+        document.getElementById('netFlood').addEventListener('click', netFlood);
+        document.getElementById('backdoorGen').addEventListener('click', backdoorGen);
+        document.getElementById('wipeLogs').addEventListener('click', wipeLogs);
+        document.getElementById('randomTarget').addEventListener('click', randomTarget);
 
-// ═══ حفظ عملية ═══
-async function saveOp() {
-    const a = parseFloat(document.getElementById('op-amt').value);
-    if (!a || !activeTarget || a <= 0) {
-        showToast("الرجاء إدخال مبلغ صحيح أكبر من صفر", "error");
-        return;
-    }
-    const newRecord = {
-        id:       Date.now(),
-        targetName: activeTarget,
-        amount:   a,
-        currency: document.getElementById('op-cur').value,
-        type:     document.getElementById('op-type').value,
-        note:     document.getElementById('op-note').value.trim(),
-        date:     new Date().toISOString()
-    };
-    user.myRecords.push(newRecord);
-    showDetails(activeTarget);
-    calculateGrand(user.myRecords);
-    localStorage.setItem('heiba_auth_session', JSON.stringify(user));
+        // خلفية ثلاثية الأبعاد (شبكة متحركة)
+        const bgCanvas = document.getElementById('bg-canvas');
+        const ctxBg = bgCanvas.getContext('2d');
+        function resizeCanvas() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
 
-    // إعادة تعيين النموذج
-    document.getElementById('op-amt').value  = "";
-    document.getElementById('op-note').value = "";
-    document.getElementById('tafqit-text').classList.add('hidden');
+        let dots = [];
+        for(let i=0; i<100; i++) {
+            dots.push({
+                x: Math.random() * bgCanvas.width,
+                y: Math.random() * bgCanvas.height,
+                z: Math.random() * 2,
+            });
+        }
+        function drawGrid() {
+            ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            ctxBg.strokeStyle = "#0ff";
+            ctxBg.lineWidth = 0.5;
+            // رسم شبكة
+            let step = 40;
+            for(let i=0; i<bgCanvas.width; i+=step) {
+                ctxBg.beginPath();
+                ctxBg.moveTo(i, 0);
+                ctxBg.lineTo(i, bgCanvas.height);
+                ctxBg.stroke();
+                ctxBg.beginPath();
+                ctxBg.moveTo(0, i);
+                ctxBg.lineTo(bgCanvas.width, i);
+                ctxBg.stroke();
+            }
+            // نقاط متحركة
+            for(let d of dots) {
+                ctxBg.fillStyle = "#0ff";
+                ctxBg.shadowBlur = 6;
+                ctxBg.fillRect(d.x, d.y, 2, 2);
+                d.x += 0.5;
+                if(d.x > bgCanvas.width) d.x = 0;
+            }
+            requestAnimationFrame(drawGrid);
+        }
+        drawGrid();
 
-    showToast("تم تثبيت العملية بنجاح ✓", "success");
-    setConnectionStatus('syncing');
-
-    try {
-        await fetch(apiUrl('/api/sync'), {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ userId: user.id, myRecords: user.myRecords })
-        });
-        setConnectionStatus('online');
-    } catch(e) {
-        setConnectionStatus('offline');
-        showToast("محفوظ محلياً — ستُزامن عند الاتصال", "info");
-    }
-}
-
-// ═══ تغيير كلمة المرور ═══
-async function updatePassword() {
-    const p1 = document.getElementById('new-pass').value;
-    const p2 = document.getElementById('confirm-pass').value;
-    if (!p1)       return showToast("الرجاء إدخال كلمة مرور", "error");
-    if (p1 !== p2) return showToast("كلمتا المرور غير متطابقتين", "error");
-    if (p1.length < 4) return showToast("كلمة المرور قصيرة جداً (4 أحرف على الأقل)", "error");
-    try {
-        const res = await fetch(apiUrl('/api/update-pass'), {
-            method: 'POST',
-            headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({ userId: user.id, newPass: p1 })
-        });
-        if (res.ok) { showToast("تم تحديث كلمة المرور ✓", "success"); closeModal('settings-modal'); }
-        else throw new Error();
-    } catch(e) {
-        user.password = p1;
-        localStorage.setItem('heiba_auth_session', JSON.stringify(user));
-        showToast("تم تحديث كلمة المرور (محلياً) ✓", "success");
-        closeModal('settings-modal');
-    }
-}
-
-// ═══ تسجيل الخروج ═══
-function logout() {
-    localStorage.removeItem('heiba_auth_session');
-    location.reload();
-}
-
-// ═══ الطباعة ═══
-function printStatement() {
-    if (!user) return;
-    const now = new Date().toLocaleDateString('ar-YE', {year:'numeric',month:'long',day:'numeric'});
-    const typeLabel = user.type === 'merchant' ? 'تاجر' : 'مواطن';
-
-    let rows = '';
-    if (user.type === 'merchant' && activeTarget) {
-        const recs = user.myRecords.filter(r => r.targetName === activeTarget);
-        rows = recs.map(r => {
-            const d = r.type === 'دين';
-            return `<tr style="border-bottom:1px solid #eee;">
-                <td style="padding:8px;">${new Date(r.date).toLocaleDateString('ar-YE')}</td>
-                <td style="padding:8px;">${r.note || r.type}</td>
-                <td style="padding:8px; color:${d?'#dc2626':'#16a34a'}; font-weight:bold;" dir="ltr">${d?'+':'−'} ${parseFloat(r.amount).toLocaleString()}</td>
-                <td style="padding:8px;">${r.currency}</td>
-            </tr>`;
-        }).join('');
-    }
-
-    const win = window.open('', '_blank');
-    win.document.write(`
-        <!DOCTYPE html><html dir="rtl" lang="ar">
-        <head><meta charset="UTF-8">
-        <title>كشف حساب HEIBA — ${user.name}</title>
-        <style>
-            body{font-family:Arial,sans-serif;padding:30px;color:#111;direction:rtl;}
-            h1{color:#aa7c11;} table{width:100%;border-collapse:collapse;margin-top:20px;}
-            th{background:#f5f5f5;padding:10px;text-align:right;border-bottom:2px solid #ddd;}
-            .header{display:flex;justify-content:space-between;align-items:flex-start;}
-            .watermark{color:#d4af37;font-size:42px;font-weight:900;font-style:italic;letter-spacing:-2px;}
-        </style></head><body>
-        <div class="header">
-            <div>
-                <div class="watermark">HEIBA</div>
-                <p style="color:#888;font-size:12px;">المنصة المالية المتكاملة</p>
-            </div>
-            <div style="text-align:left;font-size:13px;color:#555;">
-                <p>الاسم: <strong>${user.name}</strong></p>
-                <p>النوع: ${typeLabel}</p>
-                <p>التاريخ: ${now}</p>
-                ${activeTarget ? `<p>الحساب: ${activeTarget}</p>` : ''}
-            </div>
-        </div>
-        <hr style="border-color:#ddd;margin:20px 0;">
-        ${rows ? `
-        <table>
-            <thead><tr><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>العملة</th></tr></thead>
-            <tbody>${rows}</tbody>
-        </table>` : '<p style="color:#888;text-align:center;margin-top:40px;">لا توجد عمليات لعرضها</p>'}
-        <p style="margin-top:40px;color:#bbb;font-size:11px;text-align:center;">
-            تم إنشاؤه بواسطة منصة HEIBA المالية — ${now}
-        </p>
-        <script>window.print(); window.close();<\/script>
-        </body></html>`);
-    win.document.close();
-}
-
-// ═══ مراقبة حجم الشاشة ═══
-window.addEventListener('resize', () => {
-    const nav = document.getElementById('bottom-nav');
-    if (nav) {
-        nav.style.display = window.innerWidth <= 768 && user ? 'flex' : 'none';
-    }
-});
-</script>
+        // إضافة بعض السجلات الافتتاحية
+        setTimeout(() => {
+            addLog("💠 تم تحميل وحدات الاستغلال المتقدمة بنجاح.");
+            addLog("🕶️ وضع التخفي (stealth) مفعل.");
+        }, 1000);
+    </script>
 </body>
 </html>
