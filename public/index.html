@@ -1,379 +1,327 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FADI C2 PLATFORM | المركز العملياتي</title>
+    <title>FADI OPERATIONS | TACTICAL C2</title>
+    <!-- تضمين مكتبات الخرائط والرسوم -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         :root {
-            --bg-deep: #020408;
-            --panel-bg: #0b0f1a;
-            --border-color: #1e293b;
-            --accent: #38bdf8;
-            --text-main: #f8fafc;
-            --text-dim: #94a3b8;
+            --primary: #00ff9d;
+            --bg: #05070a;
+            --panel: #0d1117;
+            --border: #30363d;
+            --danger: #ff4a4a;
+            --font: 'JetBrains Mono', 'Fira Code', monospace;
         }
 
-        * {
-            margin: 0; padding: 0; box-sizing: border-box;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            background-color: var(--bg-deep);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: var(--primary);
+            font-family: var(--font);
             height: 100vh;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
-        /* Top Navigation Bar */
-        nav {
-            height: 50px;
-            background: var(--panel-bg);
-            border-bottom: 1px solid var(--border-color);
+        /* Top Status Bar */
+        .status-header {
+            height: 40px;
+            background: var(--panel);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            padding: 0 20px;
+            padding: 0 15px;
+            font-size: 11px;
             justify-content: space-between;
         }
 
-        .system-title {
-            font-weight: bold;
-            letter-spacing: 1px;
-            color: var(--accent);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        /* Main Workspace Layout */
-        .workspace {
+        /* Layout Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: 350px 1fr 380px;
+            grid-template-rows: 1fr 250px;
             flex: 1;
-            display: grid;
-            grid-template-columns: 240px 1fr 300px;
-            gap: 1px;
-            background: var(--border-color);
-        }
-
-        .sidebar, .main-content, .right-bar {
-            background: var(--bg-deep);
-            overflow-y: auto;
-        }
-
-        /* Sidebar: File System */
-        .sidebar {
-            padding: 15px;
-        }
-
-        .folder-item {
-            padding: 8px 10px;
-            cursor: pointer;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-            color: var(--text-dim);
-        }
-
-        .folder-item:hover {
-            background: rgba(56, 189, 248, 0.1);
-            color: var(--accent);
-        }
-
-        .folder-item.active {
-            background: rgba(56, 189, 248, 0.2);
-            color: var(--accent);
-        }
-
-        /* Main Content Area */
-        .main-content {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            gap: 20px;
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-        }
-
-        .stat-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-        }
-
-        .stat-label { font-size: 0.75rem; color: var(--text-dim); }
-        .stat-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; }
-
-        /* Targets Table */
-        .table-container {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.85rem;
-        }
-
-        th {
-            background: #151c2c;
-            padding: 12px;
-            color: var(--text-dim);
-            font-weight: 500;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tr:hover { background: rgba(255, 255, 255, 0.02); }
-
-        .status-badge {
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.7rem;
-            background: rgba(34, 197, 94, 0.2);
-            color: #4ade80;
-        }
-
-        /* Console Area */
-        .console-area {
+            gap: 5px;
+            padding: 5px;
             background: #000;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            height: 200px;
+        }
+
+        .pane {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .pane-header {
+            background: #161b22;
+            padding: 5px 10px;
+            font-size: 10px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            color: #8b949e;
+        }
+
+        /* Map Section */
+        #map { height: 100%; width: 100%; background: #000 !important; }
+
+        /* Decryption Visualizer */
+        .decrypt-box {
             padding: 10px;
-            font-family: 'Consolas', monospace;
-            display: flex;
-            flex-direction: column;
-        }
-
-        #term-out {
+            font-size: 12px;
+            overflow: hidden;
+            background: #000;
             flex: 1;
-            overflow-y: auto;
-            color: #4ade80;
-            font-size: 0.85rem;
-            margin-bottom: 5px;
         }
 
-        .input-line {
+        .hash-line {
             display: flex;
-            gap: 10px;
-            color: var(--accent);
+            justify-content: space-between;
+            border-bottom: 1px solid #111;
+            padding: 2px 0;
         }
 
-        #term-in {
-            background: transparent;
-            border: none;
-            color: #fff;
-            outline: none;
+        .hash-char { color: var(--danger); }
+
+        /* Radar View */
+        .radar-container {
             flex: 1;
-            font-family: inherit;
-        }
-
-        /* Right Bar: System Info */
-        .right-bar {
-            padding: 20px;
             display: flex;
-            flex-direction: column;
-            gap: 20px;
-            border-left: 1px solid var(--border-color);
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, #111 0%, #000 100%);
+            position: relative;
         }
 
-        .chart-container {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-color);
-            padding: 15px;
-            border-radius: 8px;
-            height: 180px;
-        }
-
-        /* Animations */
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .live-indicator {
-            width: 8px; height: 8px;
-            background: #4ade80;
+        .radar-circle {
+            position: absolute;
+            border: 1px solid rgba(0, 255, 157, 0.1);
             border-radius: 50%;
-            animation: pulse 2s infinite;
         }
+
+        .radar-sweep {
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            background: conic-gradient(from 0deg, rgba(0, 255, 157, 0.3) 0%, transparent 50%);
+            border-radius: 50%;
+            animation: sweep 4s linear infinite;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Logs Console */
+        .console {
+            background: #000;
+            padding: 10px;
+            font-size: 11px;
+            overflow-y: auto;
+            flex: 1;
+            color: #d1d5db;
+        }
+
+        .log-entry { margin-bottom: 3px; border-left: 2px solid var(--primary); padding-left: 8px; }
+        .ts { color: #8b949e; margin-right: 5px; }
+
+        /* Targets List */
+        .target-card {
+            padding: 10px;
+            border-bottom: 1px solid var(--border);
+            font-size: 11px;
+        }
+
+        .target-card:hover { background: #1f2937; cursor: pointer; }
+
+        .progress-mini {
+            height: 3px;
+            background: #222;
+            margin-top: 5px;
+        }
+        .progress-inner { height: 100%; background: var(--primary); transition: width 0.5s; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--bg); }
+        ::-webkit-scrollbar-thumb { background: var(--border); }
+
     </style>
 </head>
 <body>
 
-<nav>
-    <div class="system-title">
-        <div class="live-indicator"></div>
-        FADI_CORE_V5 [SYSTEM ACTIVE]
+<div class="status-header">
+    <div>
+        <span style="color:var(--danger)">● LIVE SESSION</span> | 
+        ID: F-8821-X | 
+        PROXY: TUN-AES-256 | 
+        NODES: 1,429
     </div>
-    <div style="font-size: 0.8rem; color: var(--text-dim)">
-        <span id="uptime">UPTIME: 04:12:33</span> | 
-        <span id="user">OPERATOR: FADI</span>
+    <div id="clock">00:00:00 UTC</div>
+</div>
+
+<div class="grid-container">
+    <!-- Left: Targets and Payload -->
+    <div class="pane">
+        <div class="pane-header">INFILTRATION TARGETS <span>[ACTIVE]</span></div>
+        <div id="targets-list" style="overflow-y:auto; flex:1;">
+            <!-- Targets injected here -->
+        </div>
+        <div class="pane" style="height: 150px; border:none; border-top: 1px solid var(--border)">
+            <div class="pane-header">PAYLOAD GENERATOR</div>
+            <div style="padding:10px; display:flex; flex-direction:column; gap:5px;">
+                <select style="background:#000; color:var(--primary); border:1px solid var(--border); font-size:10px; padding:3px;">
+                    <option>STAGED_REVERSE_TCP</option>
+                    <option>SILENT_KEYLOGGER_V3</option>
+                    <option>KERNEL_EXPLOIT_LPE</option>
+                </select>
+                <button onclick="generatePayload()" style="background:var(--primary); border:none; color:#000; font-size:10px; padding:5px; font-weight:bold; cursor:pointer;">INJECT PAYLOAD</button>
+            </div>
+        </div>
     </div>
-</nav>
 
-<div class="workspace">
-    <!-- Explorer -->
-    <aside class="sidebar">
-        <div style="margin-bottom: 20px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">File System</div>
-        <div class="folder-item" onclick="openDir('Root')">📁 /root</div>
-        <div class="folder-item" onclick="openDir('Payloads')">📂 payloads</div>
-        <div class="folder-item active" onclick="openDir('Exfil')">📂 exfiltrated_data</div>
-        <div class="folder-item" onclick="openDir('Config')">📂 configuration</div>
-        <div class="folder-item" onclick="openDir('Logs')">📂 system_logs</div>
-        
-        <div style="margin-top: 30px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">Active Tools</div>
-        <div class="folder-item">⚡ SQL_Scanner</div>
-        <div class="folder-item">🛡️ Proxy_Chain</div>
-        <div class="folder-item">🔑 KeyLogger_V2</div>
-    </aside>
+    <!-- Center: Global Map and Radar -->
+    <div style="display:flex; flex-direction:column; gap:5px;">
+        <div class="pane" style="flex:1;">
+            <div class="pane-header">GLOBAL INTELLIGENCE FEED <span>GEO_TRACKING: ON</span></div>
+            <div id="map"></div>
+        </div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:5px; height: 250px;">
+            <div class="pane">
+                <div class="pane-header">NETWORK SIGNAL RADAR</div>
+                <div class="radar-container">
+                    <div class="radar-circle" style="width:50px; height:50px;"></div>
+                    <div class="radar-circle" style="width:100px; height:100px;"></div>
+                    <div class="radar-circle" style="width:150px; height:150px;"></div>
+                    <div class="radar-sweep"></div>
+                    <div id="radar-dots"></div>
+                </div>
+            </div>
+            <div class="pane">
+                <div class="pane-header">BITSTREAM DECRYPTION (AES-256)</div>
+                <div class="decrypt-box" id="decryption-stream">
+                    <!-- Brute force sim -->
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Center -->
-    <main class="main-content">
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-label">TOTAL TARGETS</div>
-                <div class="stat-value">1,402</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">DATA HARVESTED</div>
-                <div class="stat-value">18.4 TB</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-label">ACTIVE PROXIES</div>
-                <div class="stat-value" style="color: var(--accent)">64</div>
-            </div>
+    <!-- Right: Logs and Analytics -->
+    <div class="pane">
+        <div class="pane-header">SYSTEM COMMAND LOGS <span>RAW_FEED</span></div>
+        <div class="console" id="log-console">
+            <!-- Logs -->
         </div>
-
-        <div class="table-container">
-            <div style="padding: 15px; background: #151c2c; border-bottom: 1px solid var(--border-color); font-weight: bold;">
-                Managed Targets (Live Feed)
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>TARGET IP</th>
-                        <th>OS</th>
-                        <th>LATENCY</th>
-                        <th>STATUS</th>
-                    </tr>
-                </thead>
-                <tbody id="target-body">
-                    <!-- Dynamic Data -->
-                </tbody>
-            </table>
+        <div class="pane" style="height: 200px; border:none; border-top: 1px solid var(--border)">
+            <div class="pane-header">IO_TRAFFIC_ANALYSIS</div>
+            <canvas id="trafficChart" style="padding:10px;"></canvas>
         </div>
-
-        <div class="console-area">
-            <div id="term-out"></div>
-            <div class="input-line">
-                <span>root@fadi_server:~$</span>
-                <input type="text" id="term-in" autofocus autocomplete="off">
-            </div>
-        </div>
-    </main>
-
-    <!-- Info Panel -->
-    <aside class="right-bar">
-        <div class="chart-container">
-            <canvas id="netChart"></canvas>
-        </div>
-        <div class="chart-container">
-            <canvas id="cpuChart"></canvas>
-        </div>
-        <div class="stat-card" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
-            <div class="stat-label" style="color: #ef4444;">INCIDENT REPORTS</div>
-            <div style="font-size: 0.8rem; margin-top: 10px;">
-                ⚠️ Attempted login on node 89.2...<br>
-                🛡️ Firewall bypassed on internal_vlan
-            </div>
-        </div>
-    </aside>
+    </div>
 </div>
 
 <script>
-    // --- Data Simulation ---
-    const targets = [
-        { id: "T-801", ip: "104.22.1.89", os: "Windows Server 2022", ping: "42ms", status: "ONLINE" },
-        { id: "T-805", ip: "185.12.55.20", os: "Ubuntu 22.04 LTS", ping: "12ms", status: "ONLINE" },
-        { id: "T-812", ip: "91.202.10.4", os: "Alpine Linux", ping: "110ms", status: "RECONNECTED" },
-        { id: "T-900", ip: "45.33.22.11", os: "Windows 11 (Internal)", ping: "35ms", status: "ONLINE" }
+    // --- Map Initialization ---
+    // استخدام خريطة داكنة لتبدو احترافية
+    const map = L.map('map', {zoomControl: false, attributionControl: false}).setView([20, 0], 2);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+
+    const locations = [
+        {lat: 55.75, lng: 37.61, city: "Moscow"},
+        {lat: 40.71, lng: -74.00, city: "New York"},
+        {lat: 35.68, lng: 139.65, city: "Tokyo"},
+        {lat: 24.71, lng: 46.67, city: "Riyadh"},
+        {lat: 51.50, lng: -0.12, city: "London"}
     ];
 
-    const targetBody = document.getElementById('target-body');
-    function renderTargets() {
-        targetBody.innerHTML = targets.map(t => `
-            <tr>
-                <td>${t.id}</td>
-                <td style="color: var(--accent)">${t.ip}</td>
-                <td>${t.os}</td>
-                <td style="color: var(--text-dim)">${t.ping}</td>
-                <td><span class="status-badge">${t.status}</span></td>
-            </tr>
-        `).join('');
-    }
-    renderTargets();
-
-    // --- Terminal Logic ---
-    const termOut = document.getElementById('term-out');
-    const termIn = document.getElementById('term-in');
-
-    function log(msg, type = '') {
-        const div = document.createElement('div');
-        div.style.color = type === 'err' ? '#ef4444' : (type === 'warn' ? '#fbbf24' : '#4ade80');
-        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
-        termOut.appendChild(div);
-        termOut.scrollTop = termOut.scrollHeight;
-    }
-
-    termIn.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-            const cmd = termIn.value.toLowerCase().trim();
-            log(`fadi_user@C2:~$ ${cmd}`, 'user');
-            
-            if (cmd === 'help') {
-                log("Available: ls, whoami, targets, scan [IP], clear", "warn");
-            } else if (cmd === 'targets') {
-                log(`Active connections: ${targets.length}`, "success");
-            } else if (cmd.startsWith('scan')) {
-                log(`Scanning ${cmd.split(' ')[1]}... Ports 80, 443, 22 OPEN.`, "success");
-            } else if (cmd === 'clear') {
-                termOut.innerHTML = '';
-            } else {
-                log(`Command not found: ${cmd}`, 'err');
-            }
-            termIn.value = '';
-        }
+    locations.forEach(loc => {
+        L.circleMarker([loc.lat, loc.lng], {
+            radius: 5,
+            color: '#00ff9d',
+            fillOpacity: 0.8
+        }).addTo(map).bindTooltip(loc.city);
     });
 
-    // --- Charts ---
-    const chartConfig = (label, color) => ({
+    // --- Data Generators ---
+    const targetsList = document.getElementById('targets-list');
+    const logConsole = document.getElementById('log-console');
+    const decryptBox = document.getElementById('decryption-stream');
+
+    function createTarget(ip, os) {
+        const div = document.createElement('div');
+        div.className = 'target-card';
+        div.innerHTML = `
+            <div style="display:flex; justify-content:space-between">
+                <span>IP: ${ip}</span>
+                <span style="color:#8b949e">${os}</span>
+            </div>
+            <div class="progress-mini"><div class="progress-inner" style="width:${Math.random()*100}%"></div></div>
+        `;
+        targetsList.appendChild(div);
+    }
+
+    const ips = ["192.168.1.45", "45.33.22.11", "89.208.24.102", "103.44.1.8", "172.16.0.4"];
+    ips.forEach(ip => createTarget(ip, "Linux 5.4"));
+
+    function addLog(msg) {
+        const div = document.createElement('div');
+        div.className = 'log-entry';
+        div.innerHTML = `<span class="ts">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+        logConsole.prepend(div);
+        if(logConsole.childElementCount > 50) logConsole.lastChild.remove();
+    }
+
+    // --- Brute Force Animation ---
+    const chars = "ABCDEF0123456789";
+    setInterval(() => {
+        let line = "";
+        for(let i=0; i<16; i++) {
+            line += chars[Math.floor(Math.random()*chars.length)];
+        }
+        const div = document.createElement('div');
+        div.className = 'hash-line';
+        div.innerHTML = `<span>ADDR_${Math.floor(Math.random()*9000)}</span> <span class="hash-char">${line}</span>`;
+        decryptBox.prepend(div);
+        if(decryptBox.childElementCount > 15) decryptBox.lastChild.remove();
+    }, 150);
+
+    // --- Radar Dots ---
+    const radarDots = document.getElementById('radar-dots');
+    setInterval(() => {
+        radarDots.innerHTML = '';
+        for(let i=0; i<3; i++) {
+            const dot = document.createElement('div');
+            dot.style.position = 'absolute';
+            dot.style.width = '4px';
+            dot.style.height = '4px';
+            dot.style.background = '#00ff9d';
+            dot.style.borderRadius = '50%';
+            dot.style.left = Math.random() * 100 + '%';
+            dot.style.top = Math.random() * 100 + '%';
+            dot.style.boxShadow = '0 0 10px #00ff9d';
+            radarDots.appendChild(dot);
+        }
+    }, 2000);
+
+    // --- Traffic Chart ---
+    const ctx = document.getElementById('trafficChart').getContext('2d');
+    const chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: Array(10).fill(''),
+            labels: Array(20).fill(''),
             datasets: [{
-                label: label,
-                data: Array(10).fill(0).map(() => Math.random() * 100),
-                borderColor: color,
+                data: Array(20).fill(0),
+                borderColor: '#00ff9d',
+                borderWidth: 1,
                 tension: 0.4,
                 pointRadius: 0
             }]
@@ -382,31 +330,31 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: { legend: { display: false } },
-            scales: { x: { display: false }, y: { display: false } }
+            scales: { x: { display: false }, y: { display: false, min: 0, max: 100 } }
         }
     });
 
-    const netChart = new Chart(document.getElementById('netChart'), chartConfig('Network Traffic', '#38bdf8'));
-    const cpuChart = new Chart(document.getElementById('cpuChart'), chartConfig('CPU Usage', '#f472b6'));
-
     setInterval(() => {
-        [netChart, cpuChart].forEach(chart => {
-            chart.data.datasets[0].data.shift();
-            chart.data.datasets[0].data.push(Math.random() * 100);
-            chart.update('none');
-        });
-    }, 2000);
+        chart.data.datasets[0].data.shift();
+        chart.data.datasets[0].data.push(Math.random() * 100);
+        chart.update('none');
+    }, 1000);
 
-    function openDir(name) {
-        log(`Navigating to /${name}... Done.`, 'warn');
-        if(name === 'Exfil') {
-            log("Contents: db_dump.sql, employee_passwords.txt, budget_2024.pdf");
-        }
+    // --- UI Interactions ---
+    function generatePayload() {
+        addLog("COMPILING MALICIOUS STAGER...");
+        setTimeout(() => addLog("OBFUSCATION COMPLETE: 128-BIT POLYMORPHIC"), 800);
+        setTimeout(() => addLog("INJECTING VIA SMB EXPLOIT..."), 1500);
+        setTimeout(() => addLog("SUCCESS: CALLBACK RECEIVED FROM 45.33.22.11", "warn"), 2500);
     }
 
-    // Initialize
-    log("SYSTEM READY. ENCRYPTION TUNNEL ESTABLISHED.");
-    log("CONNECTED TO MASTER RELAY AT 10.0.8.254");
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toISOString().split('T')[1].split('.')[0] + " UTC";
+        if(Math.random() > 0.8) addLog("Incoming packet from node " + Math.floor(Math.random()*255) + ".x.x.x");
+    }, 1000);
+
+    addLog("FADI_C2 TERMINAL INITIALIZED.");
+    addLog("READY FOR COMMANDS.");
 </script>
 
 </body>
