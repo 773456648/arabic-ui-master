@@ -2,597 +2,412 @@
 <html lang="ar">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>FADI CYBER SUITE | المقر الإلكتروني المتقدم</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FADI C2 PLATFORM | المركز العملياتي</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        :root {
+            --bg-deep: #020408;
+            --panel-bg: #0b0f1a;
+            --border-color: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
         * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            user-select: none; /* لجعل النص غير قابل للتحديد كأنه واجهة نظام */
+            margin: 0; padding: 0; box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
-            background: #000;
-            overflow: hidden;
-            font-family: 'Share Tech Mono', 'Courier New', monospace;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
             height: 100vh;
-            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* تأثير الخلفية ثلاثي الأبعاد (شبكة سايبر) */
-        #bg-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -2;
-            opacity: 0.35;
+        /* Top Navigation Bar */
+        nav {
+            height: 50px;
+            background: var(--panel-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
         }
 
-        /* طبقة ضبابية */
-        .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle at center, rgba(0,0,0,0.6) 0%, #000 100%);
-            z-index: -1;
+        .system-title {
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        /* الحاوية الرئيسية */
-        .dashboard {
-            position: relative;
+        /* Main Workspace Layout */
+        .workspace {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 240px 1fr 300px;
+            gap: 1px;
+            background: var(--border-color);
+        }
+
+        .sidebar, .main-content, .right-bar {
+            background: var(--bg-deep);
+            overflow-y: auto;
+        }
+
+        /* Sidebar: File System */
+        .sidebar {
+            padding: 15px;
+        }
+
+        .folder-item {
+            padding: 8px 10px;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        .folder-item:hover {
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+        }
+
+        .folder-item.active {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .stat-label { font-size: 0.75rem; color: var(--text-dim); }
+        .stat-value { font-size: 1.4rem; font-weight: bold; margin-top: 5px; }
+
+        /* Targets Table */
+        .table-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        table {
             width: 100%;
-            height: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background: #151c2c;
+            padding: 12px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .status-badge {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            background: rgba(34, 197, 94, 0.2);
+            color: #4ade80;
+        }
+
+        /* Console Area */
+        .console-area {
+            background: #000;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            height: 200px;
+            padding: 10px;
+            font-family: 'Consolas', monospace;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #term-out {
+            flex: 1;
+            overflow-y: auto;
+            color: #4ade80;
+            font-size: 0.85rem;
+            margin-bottom: 5px;
+        }
+
+        .input-line {
+            display: flex;
+            gap: 10px;
+            color: var(--accent);
+        }
+
+        #term-in {
+            background: transparent;
+            border: none;
+            color: #fff;
+            outline: none;
+            flex: 1;
+            font-family: inherit;
+        }
+
+        /* Right Bar: System Info */
+        .right-bar {
             padding: 20px;
             display: flex;
             flex-direction: column;
             gap: 20px;
-            backdrop-filter: blur(2px);
+            border-left: 1px solid var(--border-color);
         }
 
-        /* الشريط العلوي */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(10, 20, 30, 0.75);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid #0ff;
-            border-radius: 12px 12px 0 0;
-            padding: 12px 24px;
-            box-shadow: 0 0 15px rgba(0,255,255,0.2);
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            letter-spacing: 4px;
-            background: linear-gradient(45deg, #0ff, #f0f);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-shadow: 0 0 10px rgba(0,255,255,0.5);
-        }
-
-        .status {
-            font-size: 0.8rem;
-            color: #0ff;
-            display: flex;
-            gap: 20px;
-        }
-
-        .blink-red {
-            animation: blink 1s step-end infinite;
-            color: #f44;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0; }
-        }
-
-        /* المحتوى الرئيسي: ثلاث أعمدة */
-        .main-grid {
-            display: flex;
-            flex: 1;
-            gap: 20px;
-            min-height: 0;
-        }
-
-        /* العمود الأيسر: أدوات الهجوم */
-        .tools-panel {
-            width: 280px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            border: 1px solid rgba(0, 255, 255, 0.4);
-            padding: 18px 12px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 0 20px rgba(0,255,255,0.1);
-        }
-
-        .tools-panel h3 {
-            color: #0ff;
-            text-align: center;
-            border-bottom: 1px dashed #0ff;
-            padding-bottom: 8px;
-            font-size: 1.2rem;
-        }
-
-        .tool-btn {
-            background: #111c28;
-            border: 1px solid #0ff;
-            color: #0ff;
-            padding: 12px;
-            border-radius: 12px;
-            font-family: monospace;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
-            text-align: center;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-        }
-
-        .tool-btn:hover {
-            background: #0ff;
-            color: #000;
-            box-shadow: 0 0 20px #0ff;
-            transform: scale(1.02);
-        }
-
-        /* العمود الأوسط: المنطقة الطرفية والرسوم */
-        .center-panel {
-            flex: 2;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            min-width: 0;
-        }
-
-        .terminal-window {
-            background: #03070cee;
-            border-radius: 16px;
-            border: 1px solid #0ff;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            height: 55%;
-        }
-
-        .term-header {
-            background: #0a121c;
-            padding: 8px 15px;
-            border-bottom: 1px solid #0ff;
-            display: flex;
-            justify-content: space-between;
-            font-size: 0.7rem;
-            color: #0ff;
-        }
-
-        .term-body {
-            flex: 1;
-            overflow-y: auto;
-            padding: 12px;
-            font-family: monospace;
-            font-size: 0.8rem;
-            line-height: 1.4;
-        }
-
-        .log-line {
-            margin-bottom: 5px;
-            border-left: 2px solid #0ff;
-            padding-left: 10px;
-            color: #cfc;
-        }
-
-        .log-time {
-            color: #0ff;
-            margin-right: 10px;
-        }
-
-        /* منطقة الرسوم البيانية */
-        .graphs {
-            background: rgba(0,0,0,0.6);
-            border-radius: 16px;
-            border: 1px solid #0ff;
-            padding: 12px;
-            height: 40%;
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .graph-card {
-            flex: 1;
-            background: #07131e;
-            border-radius: 12px;
-            padding: 8px;
-            text-align: center;
-        }
-
-        .graph-card canvas {
-            width: 100%;
-            height: 100px;
-            background: #00000066;
-            border-radius: 8px;
-        }
-
-        /* العمود الأيمن: معلومات النظام والهدف */
-        .info-panel {
-            width: 300px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            border: 1px solid #f0f;
+        .chart-container {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
             padding: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            box-shadow: 0 0 20px rgba(255,0,255,0.1);
+            border-radius: 8px;
+            height: 180px;
         }
 
-        .info-card {
-            background: #0a1018;
-            border-radius: 12px;
-            padding: 10px;
-            border-left: 4px solid #f0f;
+        /* Animations */
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
-        .info-title {
-            color: #f0f;
-            font-size: 0.8rem;
-            margin-bottom: 8px;
-        }
-
-        .target-ip {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #fff;
-            word-break: break-all;
-        }
-
-        .fake-progress {
-            height: 6px;
-            background: #333;
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 8px 0;
-        }
-        .fake-progress span {
-            display: block;
-            height: 100%;
-            width: 0%;
-            background: #0ff;
-            transition: width 0.3s;
-        }
-
-        /* تأثير الشاشة */
-        .scan-line {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: rgba(0,255,255,0.3);
-            animation: scan 8s linear infinite;
-            pointer-events: none;
-            z-index: 10;
-        }
-        @keyframes scan {
-            0% { top: 0; }
-            100% { top: 100%; }
-        }
-
-        footer {
-            font-size: 0.6rem;
-            text-align: center;
-            color: #0ff6;
+        .live-indicator {
+            width: 8px; height: 8px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
 <body>
-    <canvas id="bg-canvas"></canvas>
-    <div class="overlay"></div>
-    <div class="scan-line"></div>
 
-    <div class="dashboard">
-        <div class="top-bar">
-            <div class="logo">⎈ FADI CYBER SUITE ⎈</div>
-            <div class="status">
-                <span>🟢 SECURE CONNECTION</span>
-                <span class="blink-red">⚡ LIVE EXPLOIT MODE ⚡</span>
-                <span>📡 SESSION: ACTIVE</span>
-            </div>
-        </div>
-
-        <div class="main-grid">
-            <!-- أدوات الهجوم (محاكاة) -->
-            <div class="tools-panel">
-                <h3>⚔️ ARSENAL ⚔️</h3>
-                <button class="tool-btn" id="fullRecon">🌐 FULL RECONNAISSANCE</button>
-                <button class="tool-btn" id="zeroDayExp">💀 ZERO-DAY EXPLOIT</button>
-                <button class="tool-btn" id="netFlood">🌀 NETWORK FLOOD</button>
-                <button class="tool-btn" id="backdoorGen">🔐 BACKDOOR ACCESS</button>
-                <button class="tool-btn" id="wipeLogs">🧹 WIPE TRACES</button>
-                <button class="tool-btn" id="randomTarget">🎯 RANDOM TARGET</button>
-            </div>
-
-            <!-- المنطقة الوسطى -->
-            <div class="center-panel">
-                <div class="terminal-window">
-                    <div class="term-header">
-                        <span>◤ FADI_TERM v3.1.7 ◢</span>
-                        <span>root@fadi:~#</span>
-                    </div>
-                    <div class="term-body" id="terminalLogs">
-                        <div class="log-line"><span class="log-time">[系统]</span> ✅ FADI Cyber Suite initialized.</div>
-                        <div class="log-line"><span class="log-time">[系统]</span> 🔒 جميع العمليات محاكاة بغرض العرض السينمائي.</div>
-                        <div class="log-line"><span class="log-time">[>]</span> 🎯 جاهز لتنفيذ الأوامر. اختر أداة.</div>
-                    </div>
-                </div>
-                <div class="graphs">
-                    <div class="graph-card">
-                        <div>📊 NETWORK THROUGHPUT</div>
-                        <canvas id="trafficChart" width="200" height="80"></canvas>
-                    </div>
-                    <div class="graph-card">
-                        <div>⚙️ SYSTEM LOAD</div>
-                        <canvas id="cpuChart" width="200" height="80"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- معلومات الهدف والمحاكاة -->
-            <div class="info-panel">
-                <div class="info-card">
-                    <div class="info-title">🎯 TARGET ACTIVE</div>
-                    <div class="target-ip" id="targetIp">185.165.29.101</div>
-                    <div>🌍 LOCATION: Moscow, RU (DataCenter)</div>
-                    <div>🖥️ OS: Linux 5.15 (Ubuntu 22.04)</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-title">⚡ EXPLOIT READINESS</div>
-                    <div>🔥 CVE-2024-6387 (regreSSHion)</div>
-                    <div class="fake-progress"><span id="expProgress" style="width: 78%;"></span></div>
-                    <div>📡 BACKDOOR STATUS: <span id="backdoorStat">INACTIVE</span></div>
-                </div>
-                <div class="info-card">
-                    <div class="info-title">📡 FAKE DATA STREAM</div>
-                    <div id="packetRate">PKT/s: 0</div>
-                    <div id="bandwidth">BW: 0 Mbps</div>
-                </div>
-            </div>
-        </div>
-        <footer>⚠️ بيئة سينمائية تفاعلية | جميع البيانات المقدمة وهمية لأغراض العرض فقط ⚠️</footer>
+<nav>
+    <div class="system-title">
+        <div class="live-indicator"></div>
+        FADI_CORE_V5 [SYSTEM ACTIVE]
     </div>
+    <div style="font-size: 0.8rem; color: var(--text-dim)">
+        <span id="uptime">UPTIME: 04:12:33</span> | 
+        <span id="user">OPERATOR: FADI</span>
+    </div>
+</nav>
 
-    <script>
-        // ---- عناصر وهمية متحركة ----
-        const targetIpSpan = document.getElementById('targetIp');
-        const backdoorStatSpan = document.getElementById('backdoorStat');
-        const packetRateSpan = document.getElementById('packetRate');
-        const bandwidthSpan = document.getElementById('bandwidth');
-        const expProgressSpan = document.getElementById('expProgress');
-        const terminalLogs = document.getElementById('terminalLogs');
+<div class="workspace">
+    <!-- Explorer -->
+    <aside class="sidebar">
+        <div style="margin-bottom: 20px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">File System</div>
+        <div class="folder-item" onclick="openDir('Root')">📁 /root</div>
+        <div class="folder-item" onclick="openDir('Payloads')">📂 payloads</div>
+        <div class="folder-item active" onclick="openDir('Exfil')">📂 exfiltrated_data</div>
+        <div class="folder-item" onclick="openDir('Config')">📂 configuration</div>
+        <div class="folder-item" onclick="openDir('Logs')">📂 system_logs</div>
+        
+        <div style="margin-top: 30px; font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase;">Active Tools</div>
+        <div class="folder-item">⚡ SQL_Scanner</div>
+        <div class="folder-item">🛡️ Proxy_Chain</div>
+        <div class="folder-item">🔑 KeyLogger_V2</div>
+    </aside>
 
-        // بيانات عشوائية لتبدو واقعية
-        const ipPool = [
-            "45.33.22.11", "185.130.5.245", "94.232.47.89", "103.115.18.2",
-            "162.247.74.201", "5.188.86.45", "31.184.236.10", "89.208.246.35"
-        ];
-        const locations = ["Amsterdam, NL", "Frankfurt, DE", "Singapore, SG", "Ashburn, US", "Zurich, CH"];
-        const osList = ["Linux 5.10 (Debian)", "Windows Server 2019", "FreeBSD 13.1", "CentOS 7", "Ubuntu 22.04 LTS"];
+    <!-- Center -->
+    <main class="main-content">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">TOTAL TARGETS</div>
+                <div class="stat-value">1,402</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">DATA HARVESTED</div>
+                <div class="stat-value">18.4 TB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">ACTIVE PROXIES</div>
+                <div class="stat-value" style="color: var(--accent)">64</div>
+            </div>
+        </div>
 
-        function randomTarget() {
-            let newIp = ipPool[Math.floor(Math.random() * ipPool.length)];
-            let newLoc = locations[Math.floor(Math.random() * locations.length)];
-            let newOs = osList[Math.floor(Math.random() * osList.length)];
-            targetIpSpan.innerText = newIp;
-            // تحديث المعلومات في لوحة اليمين ديناميكيًا
-            let locDiv = document.querySelector('.info-card:first-child div:nth-child(3)');
-            let osDiv = document.querySelector('.info-card:first-child div:nth-child(4)');
-            if(locDiv) locDiv.innerHTML = `🌍 LOCATION: ${newLoc}`;
-            if(osDiv) osDiv.innerHTML = `🖥️ OS: ${newOs}`;
-            addLog(`🎯 تم تحديث الهدف إلى ${newIp} (${newLoc})`);
-        }
+        <div class="table-container">
+            <div style="padding: 15px; background: #151c2c; border-bottom: 1px solid var(--border-color); font-weight: bold;">
+                Managed Targets (Live Feed)
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>TARGET IP</th>
+                        <th>OS</th>
+                        <th>LATENCY</th>
+                        <th>STATUS</th>
+                    </tr>
+                </thead>
+                <tbody id="target-body">
+                    <!-- Dynamic Data -->
+                </tbody>
+            </table>
+        </div>
 
-        // إضافة سجل للطرفية
-        function addLog(msg, isError = false) {
-            const div = document.createElement('div');
-            div.className = 'log-line';
-            const now = new Date();
-            const timeStr = `[${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')}]`;
-            div.innerHTML = `<span class="log-time" style="color:${isError ? '#f66' : '#0ff'}">${timeStr}</span> ${msg}`;
-            terminalLogs.appendChild(div);
-            div.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
+        <div class="console-area">
+            <div id="term-out"></div>
+            <div class="input-line">
+                <span>root@fadi_server:~$</span>
+                <input type="text" id="term-in" autofocus autocomplete="off">
+            </div>
+        </div>
+    </main>
 
-        // محاكاة شريط تقدم (للتأثير البصري)
-        function simulateProgress(sec, callback) {
-            let width = 0;
-            const interval = setInterval(() => {
-                width += Math.random() * 15 + 5;
-                if (width >= 100) {
-                    width = 100;
-                    clearInterval(interval);
-                    if(callback) callback();
-                }
-                if(expProgressSpan) expProgressSpan.style.width = width + '%';
-            }, sec * 20);
-        }
+    <!-- Info Panel -->
+    <aside class="right-bar">
+        <div class="chart-container">
+            <canvas id="netChart"></canvas>
+        </div>
+        <div class="chart-container">
+            <canvas id="cpuChart"></canvas>
+        </div>
+        <div class="stat-card" style="background: rgba(239, 68, 68, 0.05); border-color: rgba(239, 68, 68, 0.2);">
+            <div class="stat-label" style="color: #ef4444;">INCIDENT REPORTS</div>
+            <div style="font-size: 0.8rem; margin-top: 10px;">
+                ⚠️ Attempted login on node 89.2...<br>
+                🛡️ Firewall bypassed on internal_vlan
+            </div>
+        </div>
+    </aside>
+</div>
 
-        // --- الأدوات (كلها وهمية ولكن بمخرجات متقنة) ---
-        function fullRecon() {
-            addLog("🔍 بدأ المسح الشامل باستخدام Nmap & Masscan...");
-            simulateProgress(2.5, () => {
-                let openPorts = [22, 80, 443, 3306, 8080, 5000, 27017].filter(() => Math.random() > 0.5);
-                addLog(`✅ تم اكتشاف ${openPorts.length} منفذ مفتوح: ${openPorts.join(', ')}`);
-                addLog(`📡 خدمات: SSH, HTTP, HTTPS, MySQL, MongoDB (محاكاة)`);
-                addLog("📄 يتم جمع لافتات الخدمات... Banner: Apache/2.4.41, OpenSSH 8.9p1");
-                addLog("🎯 الثغرات المحتملة: CVE-2024-2875, CVE-2023-44487");
-            });
-        }
+<script>
+    // --- Data Simulation ---
+    const targets = [
+        { id: "T-801", ip: "104.22.1.89", os: "Windows Server 2022", ping: "42ms", status: "ONLINE" },
+        { id: "T-805", ip: "185.12.55.20", os: "Ubuntu 22.04 LTS", ping: "12ms", status: "ONLINE" },
+        { id: "T-812", ip: "91.202.10.4", os: "Alpine Linux", ping: "110ms", status: "RECONNECTED" },
+        { id: "T-900", ip: "45.33.22.11", os: "Windows 11 (Internal)", ping: "35ms", status: "ONLINE" }
+    ];
 
-        function zeroDayExp() {
-            addLog("💀 تشغيل ثغرة Zero-Day (استغلال يوم الصفر) على الهدف...");
-            simulateProgress(3, () => {
-                addLog("⚠️ تجاوز ASLR و DEP بنجاح (محاكاة)");
-                addLog("🔥 حقن شيل كود عكسي إلى المنفذ 4444");
-                addLog("🕳️ تم فتح جلسة shell تفاعلية (وهمية)");
-                backdoorStatSpan.innerText = "ACTIVE 🔓";
-                backdoorStatSpan.style.color = "#0ff";
-                addLog("🔓 [SIM] BACKDOOR ACTIVE - يمكن إصدار أوامر (وهمية)");
-            });
-        }
+    const targetBody = document.getElementById('target-body');
+    function renderTargets() {
+        targetBody.innerHTML = targets.map(t => `
+            <tr>
+                <td>${t.id}</td>
+                <td style="color: var(--accent)">${t.ip}</td>
+                <td>${t.os}</td>
+                <td style="color: var(--text-dim)">${t.ping}</td>
+                <td><span class="status-badge">${t.status}</span></td>
+            </tr>
+        `).join('');
+    }
+    renderTargets();
 
-        function netFlood() {
-            addLog("🌊 بدء هجوم تدفق حزم SYN + UDP Flood...");
-            let packets = 0;
-            let interval = setInterval(() => {
-                packets += Math.floor(Math.random() * 3000);
-                packetRateSpan.innerText = `PKT/s: ${packets}`;
-                bandwidthSpan.innerText = `BW: ${(packets * 0.012).toFixed(1)} Mbps`;
-                if(packets > 40000) clearInterval(interval);
-            }, 200);
-            simulateProgress(4, () => {
-                clearInterval(interval);
-                addLog(`✅ تم إرسال ما مجموعه ${packets.toLocaleString()} حزمة.`);
-                addLog("🛡️ جدار الحماية بدأ بتصفية الحزم، الهجوم محاكاة فقط.");
-                packetRateSpan.innerText = "PKT/s: 0";
-                bandwidthSpan.innerText = "BW: 0 Mbps";
-            });
-        }
+    // --- Terminal Logic ---
+    const termOut = document.getElementById('term-out');
+    const termIn = document.getElementById('term-in');
 
-        function backdoorGen() {
-            addLog("🔧 إنشاء باب خلفي متقدم...");
-            simulateProgress(2, () => {
-                addLog("📀 حقن المهام المجدولة (cron) لاستمرارية الاختراق.");
-                addLog("🔑 تم إنشاء مستخدم مخفي: fadi$ مع صلاحيات sudo.");
-                backdoorStatSpan.innerText = "PERSISTENT";
-                addLog("⚙️ باب خلفي يعمل على المنفذ 2222 (SSH tunnel)");
-            });
-        }
+    function log(msg, type = '') {
+        const div = document.createElement('div');
+        div.style.color = type === 'err' ? '#ef4444' : (type === 'warn' ? '#fbbf24' : '#4ade80');
+        div.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        termOut.appendChild(div);
+        termOut.scrollTop = termOut.scrollHeight;
+    }
 
-        function wipeLogs() {
-            addLog("🧹 محو السجلات من النظام المستهدف...");
-            simulateProgress(1.8, () => {
-                addLog("🗑️ /var/log/auth.log تم مسحه.");
-                addLog("🗑️ سجلات الوصول و bash_history تم إتلافها.");
-                addLog("✅ لا توجد آثار متبقية (محاكاة).");
-            });
-        }
-
-        // الرسوم البيانية المتحركة (تظهر وكأنها بيانات حية)
-        const trafficCanvas = document.getElementById('trafficChart');
-        const cpuCanvas = document.getElementById('cpuChart');
-        let trafficCtx = trafficCanvas.getContext('2d');
-        let cpuCtx = cpuCanvas.getContext('2d');
-
-        let trafficData = Array(40).fill(20);
-        let cpuData = Array(40).fill(15);
-
-        function drawChart(ctx, data, color) {
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            ctx.beginPath();
-            ctx.strokeStyle = color;
-            ctx.lineWidth = 2;
-            let w = ctx.canvas.width, h = ctx.canvas.height;
-            let step = w / (data.length - 1);
-            for(let i=0; i<data.length; i++) {
-                let x = i * step;
-                let y = h - (data[i] / 100) * h;
-                if(i===0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
+    termIn.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            const cmd = termIn.value.toLowerCase().trim();
+            log(`fadi_user@C2:~$ ${cmd}`, 'user');
+            
+            if (cmd === 'help') {
+                log("Available: ls, whoami, targets, scan [IP], clear", "warn");
+            } else if (cmd === 'targets') {
+                log(`Active connections: ${targets.length}`, "success");
+            } else if (cmd.startsWith('scan')) {
+                log(`Scanning ${cmd.split(' ')[1]}... Ports 80, 443, 22 OPEN.`, "success");
+            } else if (cmd === 'clear') {
+                termOut.innerHTML = '';
+            } else {
+                log(`Command not found: ${cmd}`, 'err');
             }
-            ctx.stroke();
+            termIn.value = '';
         }
+    });
 
-        function animateGraphs() {
-            trafficData.push(Math.random() * 70 + 10);
-            if(trafficData.length > 40) trafficData.shift();
-            cpuData.push(Math.random() * 60 + 5);
-            if(cpuData.length > 40) cpuData.shift();
-            drawChart(trafficCtx, trafficData, '#0ff');
-            drawChart(cpuCtx, cpuData, '#f0f');
-            requestAnimationFrame(animateGraphs);
+    // --- Charts ---
+    const chartConfig = (label, color) => ({
+        type: 'line',
+        data: {
+            labels: Array(10).fill(''),
+            datasets: [{
+                label: label,
+                data: Array(10).fill(0).map(() => Math.random() * 100),
+                borderColor: color,
+                tension: 0.4,
+                pointRadius: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { x: { display: false }, y: { display: false } }
         }
-        animateGraphs();
+    });
 
-        // تحديث بيانات الحزمة بشكل عشوائي حتى بدون هجوم
-        setInterval(() => {
-            if(Math.random() > 0.7) {
-                let fakePkt = Math.floor(Math.random() * 500);
-                packetRateSpan.innerText = `PKT/s: ${fakePkt}`;
-                bandwidthSpan.innerText = `BW: ${(fakePkt * 0.014).toFixed(1)} Mbps`;
-            }
-        }, 1500);
+    const netChart = new Chart(document.getElementById('netChart'), chartConfig('Network Traffic', '#38bdf8'));
+    const cpuChart = new Chart(document.getElementById('cpuChart'), chartConfig('CPU Usage', '#f472b6'));
 
-        // ربط الأزرار
-        document.getElementById('fullRecon').addEventListener('click', fullRecon);
-        document.getElementById('zeroDayExp').addEventListener('click', zeroDayExp);
-        document.getElementById('netFlood').addEventListener('click', netFlood);
-        document.getElementById('backdoorGen').addEventListener('click', backdoorGen);
-        document.getElementById('wipeLogs').addEventListener('click', wipeLogs);
-        document.getElementById('randomTarget').addEventListener('click', randomTarget);
+    setInterval(() => {
+        [netChart, cpuChart].forEach(chart => {
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(Math.random() * 100);
+            chart.update('none');
+        });
+    }, 2000);
 
-        // خلفية ثلاثية الأبعاد (شبكة متحركة)
-        const bgCanvas = document.getElementById('bg-canvas');
-        const ctxBg = bgCanvas.getContext('2d');
-        function resizeCanvas() {
-            bgCanvas.width = window.innerWidth;
-            bgCanvas.height = window.innerHeight;
+    function openDir(name) {
+        log(`Navigating to /${name}... Done.`, 'warn');
+        if(name === 'Exfil') {
+            log("Contents: db_dump.sql, employee_passwords.txt, budget_2024.pdf");
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+    }
 
-        let dots = [];
-        for(let i=0; i<100; i++) {
-            dots.push({
-                x: Math.random() * bgCanvas.width,
-                y: Math.random() * bgCanvas.height,
-                z: Math.random() * 2,
-            });
-        }
-        function drawGrid() {
-            ctxBg.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-            ctxBg.strokeStyle = "#0ff";
-            ctxBg.lineWidth = 0.5;
-            // رسم شبكة
-            let step = 40;
-            for(let i=0; i<bgCanvas.width; i+=step) {
-                ctxBg.beginPath();
-                ctxBg.moveTo(i, 0);
-                ctxBg.lineTo(i, bgCanvas.height);
-                ctxBg.stroke();
-                ctxBg.beginPath();
-                ctxBg.moveTo(0, i);
-                ctxBg.lineTo(bgCanvas.width, i);
-                ctxBg.stroke();
-            }
-            // نقاط متحركة
-            for(let d of dots) {
-                ctxBg.fillStyle = "#0ff";
-                ctxBg.shadowBlur = 6;
-                ctxBg.fillRect(d.x, d.y, 2, 2);
-                d.x += 0.5;
-                if(d.x > bgCanvas.width) d.x = 0;
-            }
-            requestAnimationFrame(drawGrid);
-        }
-        drawGrid();
+    // Initialize
+    log("SYSTEM READY. ENCRYPTION TUNNEL ESTABLISHED.");
+    log("CONNECTED TO MASTER RELAY AT 10.0.8.254");
+</script>
 
-        // إضافة بعض السجلات الافتتاحية
-        setTimeout(() => {
-            addLog("💠 تم تحميل وحدات الاستغلال المتقدمة بنجاح.");
-            addLog("🕶️ وضع التخفي (stealth) مفعل.");
-        }, 1000);
-    </script>
 </body>
 </html>
